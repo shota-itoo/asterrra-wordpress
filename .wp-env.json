@@ -1,0 +1,25 @@
+{
+  "core": "WordPress/WordPress#7.0",
+  "phpVersion": "8.3",
+  "themes": [
+    "./themes/swell_child"
+  ],
+  "port": 8918,
+  "testsEnvironment": false,
+  "config": {
+    "WP_DEBUG": true,
+    "WP_DEBUG_LOG": true,
+    "SCRIPT_DEBUG": true,
+    "WP_ENVIRONMENT_TYPE": "local"
+  },
+  "mappings": {
+    "wp-content/themes/swell": "./themes/swell",
+    "wp-content/themes/swell_child": "./themes/swell_child",
+    "wp-content/uploads": "./uploads",
+    "wp-content/mu-plugins": "./mu-plugins",
+    "wp-content/design-data": "./design-data"
+  },
+  "lifecycleScripts": {
+    "afterStart": "bash scripts/configure-wp.sh"
+  }
+}

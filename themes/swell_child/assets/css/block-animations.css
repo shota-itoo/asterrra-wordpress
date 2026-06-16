@@ -1,0 +1,93 @@
+/**
+ * Block Animations CSS
+ * ブロックアニメーション用スタイル定義
+ * Web Animations API版 - 最小限のCSS
+ */
+
+/* ========================================
+ * 初期状態
+ * ======================================== */
+
+/* アニメーション対象要素 */
+.has-animation {
+	will-change: opacity, transform;
+}
+
+/* scroll/load トリガーの初期状態（非表示） */
+.has-animation[data-animation-trigger="scroll"]:not(.is-animated),
+.has-animation[data-animation-trigger="load"]:not(.is-animated) {
+	opacity: 0;
+	visibility: hidden;
+}
+
+/* アニメーション発火後 */
+.has-animation.is-animated {
+	visibility: visible;
+}
+
+/* ========================================
+ * アクセシビリティ対応
+ * ======================================== */
+
+/* ========================================
+ * ホバー時の文字色変更（CSS変数で子要素にも継承）
+ * ======================================== */
+
+.has-animation[data-hover-color] {
+	--hover-text-color: initial;
+	transition: color 0.3s ease;
+}
+
+.has-animation[data-hover-color]:hover {
+	--hover-text-color: attr(data-hover-color);
+}
+
+/* ホバー時に文字色を変更（子要素含む） */
+.has-animation.is-hover-active,
+.has-animation.is-hover-active * {
+	color: var(--animation-hover-color) !important;
+}
+
+/* ホバー時に背景色を変更（親要素のみ、子要素には適用しない） */
+.has-animation.is-hover-active[data-hover-bg-color] {
+	background-color: var(--animation-hover-bg-color) !important;
+}
+
+/* ホバー解除時のトランジション */
+.has-animation[data-hover-color],
+.has-animation[data-hover-color] * {
+	transition: color 0.3s ease;
+}
+
+/* 背景色のトランジション（親要素のみ） */
+.has-animation[data-hover-bg-color] {
+	transition: background-color 0.3s ease;
+}
+
+/* 複数プロパティのトランジション */
+.has-animation[data-hover-color][data-hover-bg-color] {
+	transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.has-animation[data-hover-color][data-hover-bg-color] * {
+	transition: color 0.3s ease;
+}
+
+.has-animation[data-hover-color] svg,
+.has-animation[data-hover-color] svg * {
+	transition: fill 0.3s ease;
+}
+
+/* ========================================
+ * アクセシビリティ対応
+ * ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+	/* scroll/load トリガーのアニメーションを無効化（自動再生系） */
+	.has-animation[data-animation-trigger="scroll"],
+	.has-animation[data-animation-trigger="load"] {
+		opacity: 1 !important;
+		visibility: visible !important;
+		transform: none !important;
+	}
+}

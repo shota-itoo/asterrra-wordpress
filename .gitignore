@@ -1,0 +1,18 @@
+node_modules/
+package-lock.json
+.wp-env.override.json
+.wp-env.configured
+.wp-env.db-hash
+themes/swell/*
+!themes/swell/.gitkeep
+
+# 非圧縮DBダンプ（旧形式）
+data/db.sql
+
+# WordPressが自動生成するサムネイル・リサイズ画像
+uploads/**/*-[0-9]*x[0-9]*.jpg
+uploads/**/*-[0-9]*x[0-9]*.jpeg
+uploads/**/*-[0-9]*x[0-9]*.png
+uploads/**/*-[0-9]*x[0-9]*.gif
+uploads/**/*-[0-9]*x[0-9]*.webp
+uploads/**/*-scaled.*

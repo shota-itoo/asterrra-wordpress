@@ -1,0 +1,39 @@
+@charset "UTF-8";
+/*
+    Template: swell
+    Theme Name: SWELL CHILD
+    Theme URI: https://swell-theme.com/
+    Description: SWELLの子テーマ
+    Version: 1.0.1
+    Author: LOOS WEB STUDIO
+    Author URI: https://loos-web-studio.com/
+
+    License: GNU General Public License
+    License URI: http://www.gnu.org/licenses/gpl.html
+*/
+
+/* 固定ページ h2 マージンリセット（Extension の data-hdg-id 付きは除外） */
+.page .post_content h2:not([data-hdg-id]),
+.page .post_content h3:not([data-hdg-id]) {
+	margin: 0;
+}
+
+/* SWELL の section_ttl ::after/::before リセットを解除（カスタムCSS側で装飾を定義） */
+.post_content .is-style-section_ttl::after {
+	content: "";
+	border: none;
+}
+.post_content .is-style-section_ttl::before {
+	content: none;
+}
+
+[data-block-link] {
+	cursor: pointer;
+}
+
+/* SWELL 標準の .has-border/.has-background box_padding を UB でリセット
+   Extension が spacingPadding で個別管理するため */
+.wp-block-flavor-universal-block.has-border,
+.wp-block-flavor-universal-block.has-background {
+	padding: 0;
+}

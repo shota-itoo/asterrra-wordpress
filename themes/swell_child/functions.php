@@ -19,6 +19,7 @@ if ( wp_get_environment_type() !== 'local' ) {
 require_once get_stylesheet_directory() . '/inc/block-custom-common.php';
 require_once get_stylesheet_directory() . '/inc/extensions/block-link-common.php';
 require_once get_stylesheet_directory() . '/inc/extensions/heading-responsive-font.php';
+require_once get_stylesheet_directory() . '/inc/extensions/responsive-text-align.php';
 require_once get_stylesheet_directory() . '/inc/extensions/text-font-family.php';
 require_once get_stylesheet_directory() . '/inc/extensions/block-animation.php';
 require_once get_stylesheet_directory() . '/inc/blocks/universal-block.php';

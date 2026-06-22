@@ -1,0 +1,147 @@
+/* =========================================================================
+ * ページ28（NEWS一覧 /news/）限定 装飾CSS — swell_meta_css
+ * ブロック属性で表現できなかった装飾（FVグラデ/text-shadow/CTA影/上端border）
+ * を各セクションのフッククラス配下に限定して補う。
+ * 全セレクタは .sec-fv / .sec-contact 配下に限定（サイト全体・テーマ既定・
+ * .asterrra-news（news-listブロック）を無印で上書きしない）。
+ * datapack「4. 装飾レイヤー」の実値＋トップページ design-data/7 の流儀を踏襲。
+ * 実DOMは agent-browser（http://localhost:8918/?page_id=28&dev_login=1）で確認済み。
+ * ========================================================================= */
+
+
+/* =========================================================================
+ * 1. FV（.sec-fv）
+ * ========================================================================= */
+
+/* 1-a. 背景グラデオーバーレイ（左濃→右透明 navy）
+ *  FVラッパ ub-d41eada1 は ::before に背景写真(asterrra-news-fv-bg.png)を持つ
+ *  （position:absolute / inset:0 / z-index:0、実DOM確認）。グラデは ::after で重ね、
+ *  写真(::before z:0)より前面・テキスト群(z-index:2)より背面に置く。
+ *  → z-index:1 で「写真の上・コンテンツの下」に確定。
+ *  色は datapack overlay 実トークン #131C30 のアルファ 0.9→0.6→0（左濃→右透明）。 */
+.sec-fv .wp-block-flavor-universal-block:has(> .sec-fv__inner)::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	pointer-events: none;
+	/* デザインの全面オーバーレイ画像(Figma 1:4791)に合わせ、画像全体を暗く落とす。
+	 *  左（テキスト側）を最も濃く、右端も透明にせず暗さを残す（旧実装は右0%で右側が明るすぎた）。
+	 *  セレクタは ub-id 依存をやめ、テキストコンテナ .sec-fv__inner を内包する背景ラッパーに安定指定。 */
+	background: linear-gradient(
+		90deg,
+		rgba(19, 28, 48, 0.85) 0%,
+		rgba(19, 28, 48, 0.62) 50%,
+		rgba(19, 28, 48, 0.5) 100%
+	);
+}
+
+/* 1-a2. FVテキストコンテナ（max-width1280・中央・左右pad32）をグラデ(::after z1)の前面へ。
+ *  テキスト領域はブロック属性(sizeMaxWidth1280 / margin auto / padding 32)で構成。ここでは重なり順のみ補正。 */
+.sec-fv .sec-fv__inner {
+	position: relative;
+	z-index: 2;
+}
+
+/* 1-b. 見出し(h1)・ラベル/サブテキスト(p)の text-shadow（白文字の可読性確保）
+ *  datapack に text-shadow の明示値は無いため、依頼指定値を採用。
+ *  対象は FV内の h1 と p（ラベルNEWS / サブテキスト）。.sec-fv 配下に限定。 */
+.sec-fv h1.wp-block-heading,
+.sec-fv p {
+	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* 1-c. FV直下の余分な空白を解消（SWELL/loos full-wide 既定の margin-bottom:32px を打ち消し）。
+ *  FVとパンくずの間に出ていた白い隙間（32px）を除去し、パンくずがFV直下（≒デザインの24px間隔）に来るようにする。
+ *  .sec-fv.swell-block-fullWide で 0,2,0 にして既定(.swell-block-fullWide 0,1,0)に確実に勝たせる。 */
+.sec-fv.swell-block-fullWide {
+	margin-bottom: 0;
+}
+
+
+/* =========================================================================
+ * 2. CONTACT（.sec-contact）
+ * ========================================================================= */
+
+/* 2-a. CTAボタンの box-shadow（shadow-lg 相当・トップCONTACTと同一仕様）
+ *  対象はこのセクションのボタン1つ（.wp-block-button__link）。
+ *  .sec-contact 配下に限定（念のため・ページ内ボタンは当該1個のみ）。 */
+.sec-contact .wp-block-button__link {
+	box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+/* 2-b. セクション上端 border-top（#020c1b・トップCONTACTと同一仕様） */
+.sec-contact {
+	border-top: 1px solid #020c1b;
+}
+
+
+/* =========================================================================
+ * 3. パンくずリスト（FV直下・コンテンツ幅）
+ *  本文内に [asterrra_breadcrumb] ショートコードで SWELL の parts/breadcrumb を
+ *  埋め込んでいる（出力は <div class="p-breadcrumb"><ol class="p-breadcrumb__list l-container">…）。
+ *  SWELL 既定では pos_breadcrumb 設定＋MVオフの噛み合わせで display:none かつ最上部表示。
+ *  ここでは「.post_content 内のパンくずだけ」を対象に display を復活させ、
+ *  デザイン（Figma node 1:4716）通り コンテンツ幅1024px・左寄せ・指定の色/サイズ に整える。
+ *  ★スコープは .post_content .p-breadcrumb に限定（ページ最上部の SWELL 純正パンくず
+ *    ＝.post_content 外 はそのまま非表示のまま。.asterrra-news には一切触れない）。
+ * ========================================================================= */
+
+/* 3-a. 表示復活＋FV直下のコンテンツ幅・余白
+ *  Figma: frame x=208 / width=1024（1440幅キャンバスの左右208pxマージン＝中央1024幅）。
+ *  l-container 既定 max-width:1296px を 1024px に上書きして中央寄せ、左寄せテキスト。
+ *  -bg-on の薄グレー帯＋inset影は FV直下に独立バンドを作らないよう打ち消す。 */
+.post_content .p-breadcrumb {
+	display: block !important;
+	margin: 0 auto;
+	padding: 24px 0;
+	background: none !important;
+	box-shadow: none !important;
+}
+.post_content .p-breadcrumb .p-breadcrumb__list {
+	max-width: 1024px;
+	width: 100%;
+	margin: 0 auto;
+	padding-left: 16px;
+	padding-right: 16px;
+	justify-content: flex-start;
+}
+
+/* 3-b. タイポグラフィ（Noto Sans JP 12px / line-height 16px / letter-spacing 0.3px）
+ *  Figma 値そのまま。区切りは SWELL 既定の chevron（__item:after の clip-path 矢印）を流用。 */
+.post_content .p-breadcrumb .p-breadcrumb__list {
+	font-family: 'Noto Sans JP', sans-serif;
+	font-size: 12px;
+	line-height: 16px;
+	letter-spacing: 0.3px;
+}
+
+/* 3-c. 配色（Figma: HOME/区切り=#6B7280 / 現在ページ=#1F2937）
+ *  リンク（ホーム）と区切り矢印（currentcolor）はグレー、最下層ターム（お知らせ）は濃色。 */
+.post_content .p-breadcrumb .p-breadcrumb__item .p-breadcrumb__text {
+	color: #6b7280;
+}
+.post_content .p-breadcrumb .p-breadcrumb__item:last-child .p-breadcrumb__text {
+	color: #1f2937;
+}
+
+/* =============================================================
+   SP(≤599px) FVテキストをサービスページ(/service/)FVと同じサイズ感に揃える（company/と統一）。
+   service FV(SP): 英字ラベル24px / 見出し22px。見出し(48px)はタイトルのため28pxに、ラベル(20px)は24pxに。
+   600px以上は従来(48px / 20px)を維持＝不変。 */
+@media (max-width: 599px) {
+  .sec-fv h1.is-style-section_ttl {
+    font-size: 28px !important;
+    line-height: 40px !important;
+  }
+  .sec-fv p[style*="font-size:20px"] {
+    font-size: 24px !important;
+  }
+}
+
+/* =============================================================
+   SWELL既定の #content margin-bottom:81px（本文〜フッター間の余白）を打ち消す。
+   このページは最終セクションが全幅CONTACT（ネイビー）で、その下の余分な余白を無くし
+   フッターへ地続きにする（ユーザー要望: お問い合わせ下の余分なスペース削除）。 */
+#content { margin-bottom: 0 !important; }
+

@@ -1,0 +1,860 @@
+/* =========================================================================
+ * ページ7（トップ）限定 装飾CSS — swell_meta_css
+ * ブロック属性で表現できなかった装飾（グラデ/影/透かし文字/外周枠/border/ロゴ位置）
+ * を各セクションのフッククラス配下に限定して補う。
+ * 全セレクタは .sec-* 配下に限定（サイト全体・テーマ既定を無印で上書きしない）。
+ * datapack「装飾レイヤー」章＋各 verify-report「残課題」の実値を使用。
+ *
+ * ★環境ポータビリティ注意（重要）:
+ *  flavor拡張の data-ub-id は「ブロック内容のハッシュ」で生成され、backgroundImageUrl
+ *  （フルURL・ドメイン含む）を含む。検証/本番へ移すとURLが書き換わり、背景画像を持つ
+ *  ブロックだけ ub-id が変化する → そのブロック狙いのCSSが当たらず崩れる。
+ *  該当2ブロック（FVラッパー / ABOUTメッセージカード）は ub-id を使わず、
+ *  安定セレクタ（.swell-block-fullWide__inner直下 / 安定な合成親ub-c7bb4b65＋写真ub-92a57b37の否定）
+ *  で狙っている。背景画像付きブロックを新たに狙う際も ub-id 直書きを避けること。
+ * ========================================================================= */
+
+
+/* =========================================================================
+ * 0. ページ全体レイアウト補正（このswell-meta-cssはページ7のみ出力＝page限定）
+ * ヘッダー直下のSWELL既定トップ余白(.l-content padding-top:64px)を除去し、
+ * FVをヘッダー直下にフラッシュ配置（デザイン: ヘッダー直下からFV）。
+ * ========================================================================= */
+.l-content { padding-top: 0 !important; }
+
+
+/* =========================================================================
+ * 1. FV（.sec-fv）
+ * ========================================================================= */
+
+/* 1-a. 背景グラデオーバーレイ（左→右ネイビー）
+ *  背景写真ラッパ ub-853dbe09 は ::before に背景写真を持つ（実DOM確認）。
+ *  グラデは ::after で重ね、写真(::before)より前面・テキスト/ロゴ(z-index:2)より背面。
+ *  → z-index:1 で「写真の上・コンテンツの下」に確定。 */
+.sec-fv .swell-block-fullWide__inner > .wp-block-flavor-universal-block::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	pointer-events: none;
+	background: linear-gradient(
+		90deg,
+		rgba(10, 25, 47, 0.9) 0%,
+		rgba(10, 25, 47, 0.46) 70%,
+		rgba(10, 25, 47, 0) 100%
+	);
+}
+
+/* 1-b. 見出し(h2)・サブ(p)の text-shadow（白文字の可読性確保） */
+.sec-fv h2.wp-block-heading,
+.sec-fv p {
+	text-shadow: 0 0 20px rgba(0, 0, 0, 0.5), 0 2px 10px rgba(0, 0, 0, 0.8);
+}
+
+/* 1-c. 白ロゴを右下に絶対配置
+ *  位置拡張は right:52px/bottom:134px を注入済みだが、親 backgroundImage 拡張の
+ *  子要素ルール（position:relative; z-index:2）が勝つため absolute が効かない。
+ *  ページCSS層で specificity を上げ position:absolute を確定（verify-report 既知課題）。
+ *  右下アンカーの基準は背景写真ラッパ ub-853dbe09。 */
+.sec-fv figure.wp-block-image[data-img-id="img-945ec509"] {
+	position: absolute !important;
+	right: 52px;
+	bottom: 134px;
+	z-index: 2;
+	margin: 0;
+	width: 103px !important;   /* /about FVロゴと同一サイズに（278→103・ユーザー指定「aboutと同じ」） */
+}
+/* /about FVロゴ（logo2_tight・103×88・object-fit:fill・白化filter）と完全一致させる */
+.sec-fv figure.wp-block-image[data-img-id="img-945ec509"] img {
+	width: 103px !important;
+	height: 88px !important;
+	object-fit: fill !important;
+	filter: brightness(0) invert(1);   /* logo2_tight(ネイビー)を白化＝/aboutと同処理 */
+}
+
+/* 1-d. FVテキスト群の左右パディングをレスポンシブ・クランプ（ユーザー要望）
+ *  固定 padding-left:112px / right:80px のままだと、画面が狭くなっても112pxが残り
+ *  中央寄りに見える。clamp で「広い時は従来値(左112/右80・左寄せ維持。超広幅でも増えない)、
+ *  狭くなったら端から32pxで止まる」挙動にする。基準はコンテンツ群 max-width 1216px。
+ *  ・≥約1376px: 左112/右80（＝従来のフルワイド位置を維持）
+ *  ・≤約1216px: 左右32px（端から32pxで停止）
+ *  ・中間は線形にスケール。 */
+.sec-fv .swell-block-fullWide__inner > .wp-block-flavor-universal-block {
+	padding-left: clamp(32px, calc((100% - 1216px) / 2 + 32px), 112px) !important;
+	padding-right: clamp(32px, calc((100% - 1216px) / 2), 80px) !important;
+}
+
+
+/* =========================================================================
+ * 2. NEWS（.sec-news）
+ * ========================================================================= */
+
+/* 2-a. 小画像（重なる方・白フレーム）の box-shadow（shadow-xl 相当）
+ *  対象は絶対配置の白枠ラッパ ub-d0caac6c（bg白・padding4px・shadow:none）。 */
+.sec-news .wp-block-flavor-universal-block.news-img-small {
+	box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+/* 2-b. NEWS見出しは左寄せ（デザイン: NEWS／お知らせを左上に左揃え）。
+ *  SWELLの is-style-section_ttl 既定が中央寄せのため、NEWSセクション限定で打ち消す。
+ *  他セクション(SERVICE等)は中央寄せが正なので影響させない。 */
+.sec-news h2.is-style-section_ttl { text-align: left !important; }
+
+/* 2-c. セクション外周の装飾枠（Rectangle 46 / 1:1025 / 1px solid #989898）
+ *  デザイン: NEWSセクションを囲む薄グレー外枠。SERVICEと同じ breakout(1376px・中央寄せ)。
+ *  .sec-news を relative にして ::before で描画。高さはセクション全体に追従(top/bottom:0)。
+ *  小画像の絶対配置は別ラッパ基準なので影響なし。 */
+.sec-news { position: relative; }
+.sec-news::before {
+	content: "";
+	position: absolute;
+	top: 32px;        /* 枠の外側 上に32px（ユーザー要望） */
+	bottom: 32px;     /* 枠の外側 下に32px */
+	left: 50%;
+	transform: translateX(-50%);
+	width: 1376px;
+	max-width: calc(100% - 64px);   /* 左右は端から32px */
+	border: 1px solid #989898;
+	pointer-events: none;
+	z-index: 0;
+}
+
+/* 2-d. 狭幅(≤1215px・960px等)対応のみ。≥1216px(フルワイド帯)は元レイアウト(左画像432固定)を維持。
+ *  狭幅では「コンテンツを枠の内側へ＋左画像を可変化＋2カラム比率flex」を適用し、
+ *  枠とコンテンツの重なり・右リスト列の潰れを解消する。
+ *  ※data-ub-id 基準（page7は既存CSSも同基準。NEWSツリーを再挿入したらIDが変わるため要追従）。 */
+@media (max-width: 1215px) {
+	/* コンテンツを枠の内側へ（枠は端から32px、コンテンツはさらに+32px内側＝計64px） */
+	.sec-news .wp-block-flavor-universal-block.news-inner {
+		padding-left: 64px !important;
+		padding-right: 64px !important;
+	}
+	/* 左画像列(432固定)→比率flexで縮む（最大432・min-width:0で縮小許可） */
+	.sec-news .wp-block-flavor-universal-block.news-imgcomp {
+		flex: 432 1 0% !important;
+		min-width: 0 !important;
+		max-width: 432px;
+	}
+	/* 右リスト列も比率flex（432:608の比率を保って縮む） */
+	.sec-news .wp-block-flavor-universal-block.news-right {
+		flex: 608 1 0% !important;
+		min-width: 0 !important;
+	}
+	/* 大画像を列幅に追従（流体化）。元432×320のcover切り抜き比率を aspect-ratio で維持 */
+	.sec-news .wp-block-flavor-universal-block.news-imgcomp figure.wp-block-image,
+	.sec-news .wp-block-flavor-universal-block.news-imgcomp figure.wp-block-image > img {
+		width: 100% !important;
+		max-width: none !important;
+	}
+	.sec-news .wp-block-flavor-universal-block.news-imgcomp figure.wp-block-image > img {
+		height: auto !important;
+		aspect-ratio: 432 / 320 !important;
+		object-fit: cover !important;
+	}
+	/* 小画像（重なり）を%配置にして列幅に追従。中の画像は元208×184比率を維持してcover */
+	.sec-news .wp-block-flavor-universal-block.news-img-small {
+		left: 57.4% !important;
+		right: auto !important;
+		top: auto !important;
+		width: 50% !important;
+		height: auto !important;
+	}
+	.sec-news .wp-block-flavor-universal-block.news-img-small img {
+		width: 100% !important;
+		height: auto !important;
+		aspect-ratio: 208 / 184 !important;
+		object-fit: cover !important;
+	}
+}
+
+
+/* =========================================================================
+ * 3. SERVICE（.sec-service）
+ * ========================================================================= */
+
+/* 3-a. セクション外周の装飾枠（Rectangle 46 / 1376×801 / 1px solid #989898）
+ *  中央寄せコンテンツ枠の外側へ breakout した薄グレー枠。
+ *  .sec-service は position:relative 済み（実DOM確認）。::before で中央寄せ枠を描画。
+ *  幅1376px・高801px・中央寄せ。狭幅では max-width で見切れ防止。 */
+.sec-service::before {
+	content: "";
+	position: absolute;
+	top: 41px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 1376px;
+	max-width: calc(100% - 64px);
+	height: 801px;
+	border: 1px solid #989898;
+	pointer-events: none;
+	z-index: 0;
+}
+
+/* 3-b. 見出し(h2)の SWELL 既定ベタ塗り背景打ち消し
+ *  SERVICE の h2 は is-style-section_ttl 未指定で SWELL 既定装飾 bg(#04384c) が残る
+ *  （verify-report 既知）。デザインはフラットなゴールド見出し。ページ限定で打ち消す。 */
+.sec-service h2.wp-block-heading {
+	background: none;
+	padding: 0;
+}
+.sec-service h2.wp-block-heading::before,
+.sec-service h2.wp-block-heading::after {
+	display: none;
+	content: none;
+}
+
+/* 3-c. 狭幅(≤1151px)対応: 4枚カードは収まるのに1088px要るため viewport<1152 で左右にはみ出す。
+ *  ≤1151pxで「2×2折返し＋カード/写真を可変化＋外周枠を全高追従」にする。
+ *  ≥1152px(4列が収まる帯)は元レイアウト(254px×4)を維持。
+ *  ※data-ub-id 基準（page7既存CSSと同様。SERVICEツリー再挿入時は要追従）。 */
+@media (max-width: 1151px) {
+	/* グリッドを折返し可に＋左右16pxの内側余白（カードと外周枠の間に16px確保・ユーザー要望） */
+	.sec-service .wp-block-flavor-universal-block.service-grid {
+		flex-wrap: wrap !important;
+		padding-left: 16px !important;
+		padding-right: 16px !important;
+	}
+	/* カードを2×2（各行2枚・gap24考慮で 50%-12px） */
+	.sec-service .wp-block-flavor-universal-block.service-grid > .wp-block-flavor-universal-block {
+		flex: 1 1 calc(50% - 12px) !important;
+		min-width: 0 !important;
+		max-width: none !important;
+	}
+	/* カード直下の写真figure と ネイビー本体UB をカード幅100%に（254固定を解除） */
+	.sec-service .wp-block-flavor-universal-block.service-grid > .wp-block-flavor-universal-block > figure.wp-block-image,
+	.sec-service .wp-block-flavor-universal-block.service-grid > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block {
+		width: 100% !important;
+		max-width: none !important;
+	}
+	.sec-service .wp-block-flavor-universal-block.service-grid > .wp-block-flavor-universal-block > figure.wp-block-image {
+		height: auto !important;
+	}
+	/* 写真を流体化（元254×162のcover切り抜き比率を維持）。アイコン(深い階層)は対象外 */
+	.sec-service .wp-block-flavor-universal-block.service-grid > .wp-block-flavor-universal-block > figure.wp-block-image img {
+		width: 100% !important;
+		height: auto !important;
+		aspect-ratio: 254 / 162 !important;
+		object-fit: cover !important;
+	}
+	/* 外周枠を2行分の高さに追従（固定801px→top/bottom基準で全高） */
+	.sec-service::before {
+		height: auto !important;
+		bottom: 41px !important;
+	}
+}
+
+/* 3-d. カード内テキストを中央寄せ（デザイン datapack: 見出し・説明文とも align=center。現状left）。
+ *  ＋デザインでは画像にも #d9d9d9 1px 枠線（カード本体は既に付与済み）。全幅共通。 */
+.sec-service .wp-block-flavor-universal-block.service-grid h3.wp-block-heading {
+	text-align: center !important;
+}
+.sec-service .wp-block-flavor-universal-block.service-grid p {
+	text-align: center !important;
+}
+.sec-service .wp-block-flavor-universal-block.service-grid > .wp-block-flavor-universal-block > figure.wp-block-image img {
+	border: 1px solid #d9d9d9 !important;
+}
+
+/* 3-e. カードの「タイトル｜アイコン」を横並び中央ペアに（縦中心を揃え・間隔12px）＋見出し下線除去（ユーザー要望）。
+ *  ネイビー本体(card直下UB)を row-wrap にし、h3(order1)とアイコンUB(order2・絶対配置解除)を1行、説明文p(order3)は全幅で次行。
+ *  タイトル+12px+アイコンが収まるよう左右paddingを24pxに（既定33pxだと1行見出しで収まらず折返す）。 */
+/* SWELL既定の見出し下線(::before/::after)を除去 */
+.sec-service .wp-block-flavor-universal-block.service-grid h3.wp-block-heading::before,
+.sec-service .wp-block-flavor-universal-block.service-grid h3.wp-block-heading::after {
+	display: none !important;
+	content: none !important;
+}
+.sec-service .wp-block-flavor-universal-block.service-grid > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block {
+	flex-flow: row wrap !important;
+	align-items: center !important;
+	align-content: flex-start !important;   /* 行を上揃え（内容量で見出し位置がズレないように） */
+	justify-content: center !important;
+	column-gap: 12px !important;
+	row-gap: 16px !important;
+	padding-left: 16px !important;
+	padding-right: 16px !important;
+}
+/* アイコンの高さを48pxに統一（家49/書類44/ビル58/鍵42 と不揃い→見出し行高=見出し位置がカード毎にズレるため）。
+ *  48px は2行見出し(47px)以上なので、全カードの見出し行高が48pxに揃い、見出しの縦位置が一致する。 */
+.sec-service .wp-block-flavor-universal-block.service-grid > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block img {
+	height: 48px !important;
+	width: auto !important;
+	object-fit: contain !important;
+	aspect-ratio: auto !important;
+}
+.sec-service .wp-block-flavor-universal-block.service-grid > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block > h3.wp-block-heading {
+	order: 1 !important;
+	margin: 0 !important;
+	flex: 0 1 auto !important;   /* 収まらない場合だけ見出しを縮める（アイコンを下に押し出さない） */
+	min-width: 0 !important;
+}
+.sec-service .wp-block-flavor-universal-block.service-grid > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block {
+	order: 2 !important;
+	position: static !important;
+	flex: 0 0 auto !important;
+}
+.sec-service .wp-block-flavor-universal-block.service-grid > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block > p {
+	order: 3 !important;
+	flex: 0 0 100% !important;
+}
+
+/* 3-f. SERVICE導入文（カードグリッド外の段落 ub-c0c07d42）も中央寄せ（datapack: align=center。現状left）。 */
+.sec-service .wp-block-flavor-universal-block.service-container p {
+	text-align: center !important;
+}
+
+
+/* =========================================================================
+ * 4. ABOUT US（.sec-about）
+ * ========================================================================= */
+
+/* 4-a. カード上端を「ABOUT US」見出し上端に揃える（デザイン: カード top125 ≒ 見出し top128＝一直線）
+ *  実装ではコンポジション親 ub-c7bb4b65 が見出しブロックの直下に gap64px で置かれ、カード（絶対 top:0）が
+ *  見出し上端より 128px（＝見出し高64 ＋ gap64）下へずれていた。親を margin-top:-128px で引き上げ、
+ *  カード上端＝見出し上端に揃える（カードは右・見出しは左で水平に干渉しない。写真は親内 top:159 で下のまま）。
+ *  全幅共通（PC・レスポンシブとも適用）。 */
+.sec-about .about-overlap {
+	margin-top: -128px;
+}
+
+/* 4-b. メッセージカード（navy 80% オーバーレイ）の box-shadow
+ *  対象は背景画像+navy overlay を持つ絶対配置カード ub-596ad204（668×466）。 */
+.sec-about .wp-block-flavor-universal-block.about-overlap > .wp-block-flavor-universal-block:not(.about-photo) {
+	box-shadow: 0 0 6px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* 4-c. 〔スクショ基準で再構成〕写真・カードの配置とサイズ（PCの横並び＋控えめな重なり）。
+ *  ※Figmaの座標データはこの環境のコンテンツ幅(1088px)と設計のコンテンツ幅(1152px)が食い違い、
+ *    そのまま使うと重なりが過大（156px）になった。よってユーザー提供スクショの見た目に合わせて再構成。
+ *  元の構成: 親 ub-c7bb4b65 内に 写真 ub-92a57b37（背面）とカード ub-596ad204（前面）が絶対配置で重なる。
+ *  対応:
+ *   ・親（composition枠）をコンテンツ幅(1088)より広げる（最大1180px・viewport中央へブリードアウト、
+ *     狭幅は 100vw-48px で頭打ち＝はみ出さない）。これで写真596+カード668を「重なり約70px」で置ける
+ *     （スクショの控えめな重なりを再現）。
+ *   ・カードは前面で通常フロー化＋右寄せ＋高さ可変（テキスト切れ防止）。ロゴ縮小＆padding調整で
+ *     本文2行・カード高さ感を設計に寄せる。
+ *   ・写真は背面で左寄せ＋下端アンカー（カード下端より少し下に出す＝スクショ通り）。両者とも幅可変。 */
+/* 親: 高さ可変＋コンテンツ幅より広い composition 枠に（viewport中央へブリード・狭幅は頭打ち） */
+.sec-about .about-overlap {
+	position: relative;
+	height: auto !important;
+	min-height: 0 !important;
+	width: min(1180px, calc(100vw - 48px)) !important;
+	max-width: none !important;
+	margin-left: 0 !important;
+	margin-right: 0 !important;
+	left: 50%;
+	transform: translateX(-50%);
+}
+/* カード（前面 z:2）: 通常フロー・右寄せ・幅可変（最大668）・高さ可変。
+ *  ★スクショ準拠の内部レイアウト: CSS Grid 2カラムで「上段＝ロゴ(左)｜見出し(右)」、
+ *    本文2段落とボタンは2カラムをまたいで下段に全幅配置（ロゴと見出しを横並びにする）。 */
+.sec-about .about-overlap > .wp-block-flavor-universal-block:not(.about-photo) {
+	position: relative !important;
+	top: auto !important;
+	left: auto !important;
+	right: auto !important;
+	width: 57% !important;
+	max-width: 668px;
+	height: auto !important;
+	min-height: 0 !important;
+	margin-left: auto !important;
+	margin-right: 0 !important;
+	padding: 48px 36px !important;
+	display: grid !important;
+	grid-template-columns: 124px 1fr;
+	column-gap: 12px;
+	row-gap: 18px;
+	align-items: center;
+	z-index: 2;
+}
+/* 本文2段落とボタンは2カラムをまたいで全幅（ロゴ=1st子→r1c1、見出し=2nd子→r1c2 に自動配置） */
+.sec-about .about-overlap > .wp-block-flavor-universal-block:not(.about-photo) > p,
+.sec-about .about-overlap > .wp-block-flavor-universal-block:not(.about-photo) > .wp-block-buttons {
+	grid-column: 1 / -1;
+}
+/* 狭幅: ロゴ横の見出し列が狭くなり見出しが3〜4行に潰れるため、≤1100pxでは1カラム化（縦積み）。
+ *  ロゴ→見出し→本文→ボタンが全幅で縦に並び、見出しは全幅で2行に収まる。 */
+@media (max-width: 1100px) {
+	.sec-about .about-overlap > .wp-block-flavor-universal-block:not(.about-photo) {
+		grid-template-columns: 1fr;
+	}
+}
+/* カードロゴ: 白・カード左上。ネイビー単色ロゴを filter で白化。位置は左寄せ(margin 0)。
+ *  画像は透明余白を切り詰めたトリミング版に差し替え済み。figure幅110px・自然比率（width100%/height auto）。
+ *  ※FVロゴとは別物。列幅124px＋gapで見出しとの余白≒26pxを確保。 */
+.sec-about .about-overlap > .wp-block-flavor-universal-block:not(.about-photo) figure {
+	width: 110px !important;
+	margin: 0 !important;
+}
+.sec-about .about-overlap > .wp-block-flavor-universal-block:not(.about-photo) figure img {
+	width: 100% !important;
+	height: auto !important;
+	filter: brightness(0) invert(1);
+}
+/* カード見出し: 見出しはロゴ右の列(約454px)に2行で収める。全角スペース字下げで実幅が広く、
+ *  32pxだと2行目が折返して3行化するため上限を30pxに（流動。狭幅は更に縮小して破綻防止）。 */
+.sec-about .about-overlap > .wp-block-flavor-universal-block:not(.about-photo) h3 {
+	font-size: clamp(22px, 2.6vw, 30px) !important;
+}
+/* 写真（背面 z:1）: 左寄せ・幅可変（最大596）・下端アンカーでカード下端より下に出す。
+ *  bottom を -30→-52 に下げ、写真上端を「ABOUT US/代表挨拶」見出し帯の下へ逃がす
+ *  （実測: 代表挨拶 下端192 / 旧写真上端182=10px食い込み → 新写真上端≒204でクリア）。
+ *  写真幅596・カードとの重なり(約70px)は維持（幅を削ると重なりが痩せるため位置で解決）。 */
+.sec-about .about-photo {
+	position: absolute !important;
+	left: -10px !important;
+	right: auto !important;
+	bottom: -52px !important;
+	top: auto !important;
+	transform: none !important;
+	width: 50% !important;
+	max-width: 596px;
+	height: auto !important;
+	z-index: 1;
+}
+.sec-about .about-photo figure,
+.sec-about .about-photo img {
+	width: 100% !important;
+	height: auto !important;
+	aspect-ratio: 596 / 397;   /* ロード前後とも建物写真の縦横比を保持（遅延画像未ロード時の正方形化を防止） */
+	object-fit: cover;
+	max-width: 100%;
+	border-radius: 0 !important;   /* インライン由来の角丸(10px)を解除＝直角に */
+}
+
+/* 4-e. カード内の微調整（ユーザー指定）
+ *  ①見出し下の装飾区切り線（h3::before＝2pxのrepeating-linear-gradient）は不要 → 非表示。
+ *  ②ボタン「会社概要を見る」は中央揃え（既定 is-content-justification-left＝左寄せ を上書き）。 */
+.sec-about .about-overlap > .wp-block-flavor-universal-block:not(.about-photo) h3::before {
+	display: none !important;
+}
+.sec-about .about-overlap > .wp-block-flavor-universal-block:not(.about-photo) .wp-block-buttons {
+	width: 100% !important;             /* 入れ物が中身幅に縮んで左寄せのため、全幅化してから中央寄せ */
+	justify-content: center !important;
+}
+
+
+/* =========================================================================
+ * 5. COMPANY（.sec-company）
+ * ========================================================================= */
+
+/* 5-a. セクションを overflow:hidden 化（透かし文字の左右はみ出しをクリップ）
+ *  position:relative は実DOMで済み。overflow を visible→hidden に。
+ *  併せて SWELL full-wide 既定の margin-bottom:32px を 0 に（次が CONTACT＝色付きのため、
+ *  地のBody白 #fdfdfd が32px露出して無駄な白帯になっていた → 地続き化）。 */
+.sec-company {
+	overflow: hidden;
+	margin-bottom: 0 !important;
+}
+
+/* 5-b. 背景の透かし文字「ASTERRA CORPORATION」
+ *  Noto Serif JP 700 / rgba(255,255,255,0.05) / nowrap。
+ *  実測: font-size 144px で実幅 約1869px（比率 約13.0）。.sec-company は overflow:hidden のため
+ *  固定144pxだと viewport 幅 < 約1880px で右側が見切れる（960pxでは「ASTERRA CO」のみ表示）。
+ *  → font-size を幅連動 min(144px, 7.5vw) にして全文が常に収まるように（960→約72px・1440→約108px、
+ *    1920px以上は144pxで頭打ち＝従来の見た目を維持）。line-height も font 追従で 1 に。 */
+.sec-company::before {
+	content: "ASTERRA CORPORATION";
+	position: absolute;
+	top: 120px;
+	left: -8px;
+	z-index: 0;
+	color: rgba(255, 255, 255, 0.05);
+	font-family: "Noto Serif JP", serif;
+	font-weight: 700;
+	font-size: min(144px, 7.5vw);
+	line-height: 1;
+	letter-spacing: 0;
+	white-space: nowrap;
+	pointer-events: none;
+}
+
+/* 5-c. 右オフィス小画像2枚（オフィス内観・会議室）の box-shadow（shadow-xl 相当）
+ *  対象は絶対配置の小画像ラッパ ub-9cb4ebf7 / ub-76f9a4e3（277×150・白枠1px済）。 */
+.sec-company .wp-block-flavor-universal-block.company-img-interior,
+.sec-company .wp-block-flavor-universal-block.company-img-meeting {
+	box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+
+/* =========================================================================
+ * 6. CONTACT（.sec-contact）
+ * ========================================================================= */
+
+/* 6-a. CTAボタンの box-shadow（shadow-lg 相当）
+ *  対象はこのセクションのボタン1つ。.sec-contact 配下に限定（ページ内に7ボタン存在）。 */
+.sec-contact .wp-block-button__link {
+	box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+/* 6-b. セクション上端 border-top（#020c1b） */
+.sec-contact {
+	border-top: 1px solid #020c1b;
+}
+
+/* 6-c. 見出し(h2)の SWELL 既定ベタ塗り背景打ち消し（SERVICE と同様・既知課題） */
+.sec-contact h2.wp-block-heading {
+	background: none;
+	padding: 0;
+}
+.sec-contact h2.wp-block-heading::before,
+.sec-contact h2.wp-block-heading::after {
+	display: none;
+	content: none;
+}
+
+/* FV スマホ専用タイトル(.fv-sp-title)はPC(≥960px)では非表示（スマホのみ表示・下の@media参照） */
+.sec-fv .fv-sp-title {
+	display: none;
+}
+
+
+/* =========================================================================
+ * 7. SP レイアウト（≤959px）— スマホデザイン対応（Figma node 1-1542 準拠）
+ *    ★PC(≥960px)には一切影響しない：この @media ブロック内のみで完結。
+ *    各セクションを1カラムのモバイルレイアウトへ。
+ * ========================================================================= */
+@media (max-width: 959px) {
+	/* --- FV: タイトルをスマホデザインのコピーに差し替え（PCは現状「変わりゆく時代に〜」維持）。
+	 *   本文HTMLは触らず、実テキストを font-size:0 で畳み、::before にデザイン文言を表示。
+	 *   長文化で折返すため font を流体化(clamp)し常に2行に収める。白・Noto Serif・中央＝既存踏襲。 --- */
+	.sec-fv h2.is-style-section_ttl {
+		display: none !important;     /* スマホは元タイトル（変わりゆく〜）を隠す */
+	}
+	.sec-fv .fv-sp-title {
+		display: block !important;
+		align-self: stretch !important;   /* 親flex(align-start)で潰れ防止＝全幅で2行化 */
+		margin: 0 !important;
+		font-family: "Noto Serif JP", serif !important;
+		font-weight: 400 !important;
+		font-size: clamp(20px, 5.2vw, 40px) !important;   /* デザイン白40px基準でvw流体化 */
+		line-height: 1.5 !important;
+		letter-spacing: 4px !important;
+		color: #fff !important;
+		text-align: left !important;   /* デザイン・本文・ボタンと左端を揃える（左揃え） */
+		word-break: keep-all !important;   /* 半角スペースだけで改行＝2句が綺麗に2行に */
+		text-shadow: 0 0 20px rgba(0, 0, 0, 0.5), 0 2px 10px rgba(0, 0, 0, 0.8) !important;
+	}
+	.sec-fv .fv-sp-title .fv-mirai {
+		color: #c5a059 !important;     /* 「未来」だけゴールド（デザイン準拠） */
+		font-size: 1.2em !important;   /* 48/40＝デザインで少し大きい */
+	}
+
+	/* --- SERVICE: SPデザインは 2×2（2カラム）。既存 ≤1151 ルールの 2×2 をそのまま使うため、
+	 *   ≤959 での1カラム化上書きは行わない（削除済み）。 --- */
+
+	/* --- SERVICE 背景: SPデザインは白(#f4f5f6)・ネイビーのカードが映える構図（PCはネイビー維持）。
+	 *   背景を白にすると白文字（サブ見出し「事業内容」・導入文）が見えなくなるので暗色化。
+	 *   見出しSERVICE(ゴールド)・カード(ネイビー)・ボタン(ネイビー地)はそのまま。 --- */
+	.sec-service {
+		background-color: #f4f5f6 !important;   /* full-wideブロックのインライン#0a192fを上書き */
+	}
+	.sec-service .wp-block-flavor-universal-block.service-head p {   /* サブ見出し「事業内容」 */
+		color: #1f2937 !important;
+	}
+	.sec-service .wp-block-flavor-universal-block.service-container > p {   /* 導入文（直下のpのみ。ub-c0c07d42 はカード群も内包するため子孫pを巻き込まないよう > で限定＝カード説明文は白のまま） */
+		color: #2d3543 !important;
+	}
+
+	/* --- COMPANY: 「会社情報＋ボタン」と「ビル画像collage」の横並び(row)を縦積み(column)に。
+	 *   情報→画像の順。画像collage(絶対配置の重なり構図)はデザイン寸法384px維持で中央寄せ
+	 *   ＝構図を崩さない。phoneでは384px≒全幅。 --- */
+	.sec-company .company-cols {
+		flex-direction: column !important;
+		row-gap: 64px !important;   /* デザイン: 会社情報→コラージュ間は64px */
+	}
+	.sec-company .company-colL {       /* 会社情報＋ボタン列 */
+		width: 100% !important;
+	}
+	/* ビル画像collage列を全幅流体化（デザインsp_5準拠の重なり構図を保持）。
+	 *  設計616px幅では左小画像が列外(-78px)へ出る構図のため、SPでは列内に作り直す：
+	 *  アスペクト比コンテナ化＋大画像を絶対top0で全幅、小2枚を％配置で左下・右下に重ねる。 */
+	.sec-company .company-colR {
+		width: 100% !important;
+		max-width: none !important;
+		margin: 0 !important;
+		position: relative !important;
+		aspect-ratio: 704 / 400 !important;   /* デザイン: コンテナ400（大画像350＋50）。小写真は下端から41pxはみ出す */
+		min-height: 0 !important;             /* ブロック既定min-height:400pxを解除（狭幅でaspect比より優先され小写真が下落するため） */
+	}
+	.sec-company .company-colR > figure {          /* 大ビル画像 */
+		position: absolute !important;
+		top: 0 !important;
+		left: 0 !important;
+		width: 100% !important;
+		height: auto !important;
+		margin: 0 !important;
+	}
+	.sec-company .company-colR > figure img {
+		width: 100% !important;
+		height: auto !important;
+		aspect-ratio: 704 / 350 !important;   /* デザイン: 大ビル画像は横長(704×350) */
+		object-fit: cover !important;
+	}
+	.sec-company .company-img-interior {                    /* 小画像・左下（デザイン: x-14=左-2%ブリード・幅38.7%・大画像下端に浅く重ね下にはみ出し） */
+		left: -2% !important;
+		right: auto !important;
+		top: 78.25% !important;
+		bottom: auto !important;
+		width: 38.7% !important;
+		height: auto !important;
+	}
+	.sec-company .company-img-meeting {                    /* 小画像・右下（デザイン: 右端102%=右へ2%ブリード・幅38.7%・中央に広い隙間） */
+		left: 63.3% !important;
+		right: auto !important;
+		top: 78.25% !important;
+		bottom: auto !important;
+		width: 38.7% !important;
+		height: auto !important;
+	}
+	.sec-company .company-img-interior img,
+	.sec-company .company-img-meeting img {
+		width: 100% !important;
+		height: auto !important;
+		aspect-ratio: 273 / 128 !important;
+		object-fit: cover !important;
+	}
+
+	/* --- NEWS: 特集画像collageとお知らせリストの横並び(row)を縦積み(column)に（画像上→リスト下）。
+	 *   collageの流体化（大画像aspect・小画像%配置）は既存の ≤1215px ルールが担当済み。
+	 *   ここでは縦積み＋画像の432px上限解除（全幅化）のみ。小画像の右はみ出しを抑えるため
+	 *   左%と幅%をSP用に微調整（列内に収める）。 --- */
+	/* NEWSコンテナ: 上下paddingをスマホデザイン実寸に合わせる（768デザインで 上128px / 下167px）。
+	 *  小さい画面では比例縮小するよう vw ベース、768以上はデザイン値で頭打ち（min）。
+	 *  下paddingは外枠(::before bottom:32)との関係も含めデザインの「ボタン↔枠下134px」を再現。 */
+	.sec-news .news-inner {
+		padding-top: min(128px, 16.7vw) !important;
+		padding-bottom: min(167px, 21.7vw) !important;
+		row-gap: 36px !important;          /* 見出し → 内容 */
+	}
+	.sec-news .news-body {
+		flex-direction: column !important;
+		row-gap: 28px !important;          /* 画像 → リスト（40→28に） */
+		align-items: stretch !important;
+	}
+	/* リスト: PCの左インデント40pxを解除し画像と左端を揃える（全幅化） */
+	.sec-news .news-right {
+		padding-left: 0 !important;
+	}
+	/* 特集画像をアスペクト比コンテナ化。スマホデザイン(Figma)実寸に合わせる：
+	 *  大画像 704×320（横長2.2:1）＋小画像 352×192 を x384/y160 に重ね（下に32px食い出し）。
+	 *  → コンテナ 704×352、大画像を絶対top0で全幅(aspect 704/320 cover)、小画像を設計%位置に。 */
+	.sec-news .wp-block-flavor-universal-block.news-imgcomp {
+		flex: 0 0 auto !important;
+		width: 100% !important;
+		max-width: none !important;
+		position: relative !important;
+		height: auto !important;          /* ブロックの固定height:320pxを解除しaspect-ratioを効かせる */
+		aspect-ratio: 704 / 352 !important;
+	}
+	.sec-news .wp-block-flavor-universal-block.news-imgcomp > figure.wp-block-image {
+		position: absolute !important;
+		top: 0 !important;
+		left: 0 !important;
+		width: 100% !important;
+		height: auto !important;
+		margin: 0 !important;
+	}
+	.sec-news .wp-block-flavor-universal-block.news-imgcomp figure.wp-block-image > img {
+		aspect-ratio: 704 / 320 !important;   /* デザインの横長クロップ（≤1215の432/320を上書き・同詳細度で後勝ち） */
+	}
+	.sec-news .wp-block-flavor-universal-block.news-right {
+		flex: 0 0 auto !important;
+		width: 100% !important;
+	}
+	/* 小画像（重なり）: デザイン位置（x384/y160 of 704×352 → left54.5%/top45.5%/width50%）。下に食い出す */
+	.sec-news .wp-block-flavor-universal-block.news-img-small {
+		left: 54.5% !important;
+		right: auto !important;
+		top: 45.5% !important;
+		bottom: auto !important;
+		width: 50% !important;
+		height: auto !important;
+	}
+	.sec-news .wp-block-flavor-universal-block.news-img-small img {
+		aspect-ratio: 352 / 192 !important;   /* デザインの小画像クロップ（≤1215の208/184を上書き） */
+	}
+
+	/* --- ABOUT US: SPデザイン(image#10)の重なり構図を再現。
+	 *   写真=左寄せ66%、カード=右寄せ94.5%(左5.5%)で写真下端に約12px重ねる。z:カード>写真。
+	 *   カード内はロゴ左+見出し右の横並び（≤1100の1カラム化を上書き）。
+	 *   合成親はx32/幅704(コンテンツ域)。デザイン基準: 写真465/カード668/重なり12px @768。 --- */
+	.sec-about .about-overlap {
+		margin-top: 32px !important;
+		width: 100% !important;
+		max-width: none !important;
+		left: auto !important;
+		transform: none !important;
+		display: block !important;        /* flex column解除＝通常フロー＋負マージンで重ね */
+		position: relative !important;
+	}
+	.sec-about .about-photo {        /* 建物写真: 左寄せ66% */
+		position: relative !important;
+		width: 66% !important;
+		max-width: none !important;
+		margin: 0 auto 0 0 !important;
+		left: auto !important;
+		right: auto !important;
+		top: auto !important;
+		bottom: auto !important;
+		transform: none !important;
+		z-index: 1 !important;
+	}
+	.sec-about .about-overlap > .wp-block-flavor-universal-block:not(.about-photo) {        /* メッセージカード: 右寄せ94.5%・写真下端に約12px重ねる */
+		position: relative !important;
+		width: 94.5% !important;
+		max-width: none !important;
+		margin-left: 5.5% !important;
+		margin-right: 0 !important;
+		margin-top: -12px !important;
+		padding: 44px 40px !important;
+		z-index: 2 !important;
+		grid-template-columns: 124px 1fr !important;   /* ロゴ左+見出し右の横並び（1カラム化を上書き） */
+	}
+	/* カード見出し: PC用の line-height:44px が空きすぎ＋SWELL既定の左右padding(12px)で利用幅が
+	 *  狭まり「変わりゆく時代に、」が1行に収まらずガタついていた。行間正常化＋padding除去＋22pxで
+	 *  全角スペース字下げの2行構成（PC同様）に収める。 */
+	/* カード見出しをSPデザインのコピー「お客様の未来を照らし、価値あるご提案を」(全体ゴールド)に差し替え。
+	 *  PCは元h3「変わりゆく〜」維持。実テキストをfont-size:0で畳み、::before に差し替え（単色なので疑似でOK）。
+	 *  ※h3::before の装飾は元々 display:none・空なので衝突なし。 */
+	.sec-about .about-overlap > .wp-block-flavor-universal-block:not(.about-photo) h3 {
+		font-size: 0 !important;       /* 実テキスト「変わりゆく〜」を畳む */
+		line-height: 0 !important;     /* 実テキスト2行分(44px×2=88px)の空白を消す（::beforeは下でheight:auto化して高さ確保） */
+		letter-spacing: 0 !important;
+		padding-left: 0 !important;
+		padding-right: 0 !important;
+	}
+	.sec-about .about-overlap > .wp-block-flavor-universal-block:not(.about-photo) h3::before {
+		content: "お客様の未来を照らし、 価値あるご提案を" !important;
+		display: block !important;
+		position: static !important;   /* 既定の::before絶対配置を解除＝通常フローで高さを確保（本文重なり防止） */
+		height: auto !important;        /* 既定の区切り線(height:2px)を解除＝見出し2行分の高さを持たせる */
+		background: none !important;    /* 既定の区切り線(repeating-linear-gradient)を消す＝ロゴ〜見出し間の不要な線を除去 */
+		font-family: "Noto Serif JP", serif !important;
+		font-weight: 700 !important;
+		font-size: clamp(18px, 4.4vw, 32px) !important;   /* デザイン32px@768基準でvw流体化 */
+		line-height: 1.5 !important;
+		letter-spacing: 0.7px !important;
+		color: #c5a059 !important;        /* デザイン: 見出し全体ゴールド */
+		word-break: keep-all !important;  /* 半角スペースで2句を綺麗に2行に */
+		text-align: right !important;     /* デザイン: 行を右揃え（2行目が右に寄り1行目と右端が揃う） */
+		width: fit-content !important;    /* 見出し幅を1行目幅に縮める＝位置はロゴ右のまま、行だけ右揃え */
+	}
+}
+
+
+/* =========================================================================
+ * 8. スマホ狭幅（≤599px）フォールバック
+ *    SPデザイン(768px)の重なり構図は狭幅で窮屈になるため縦積みに切替。
+ * ========================================================================= */
+@media (max-width: 599px) {
+	/* ABOUT US: 写真フル幅・カードフル幅・カード見出しを縦積み（ロゴ上/見出し下）に。
+	 *  ＝重なり構図の見出し横並びが≤599で潰れるのを回避。見出しコピー(ゴールド)・白背景は維持。 */
+	.sec-about .about-photo {
+		width: 100% !important;
+		margin: 0 !important;
+	}
+	.sec-about .about-overlap > .wp-block-flavor-universal-block:not(.about-photo) {
+		width: 100% !important;
+		margin-left: 0 !important;
+		margin-top: -40px !important;
+		padding: 36px 28px !important;
+		grid-template-columns: 1fr !important;   /* ロゴ上・見出し下の縦積み */
+	}
+	/* ABOUTカード(狭幅): ロゴを中央・見出しをその下に中央寄せ（ユーザー要望 image#15）。 */
+	.sec-about .about-overlap > .wp-block-flavor-universal-block:not(.about-photo) figure {
+		justify-self: center !important;   /* ロゴを中央に */
+	}
+	.sec-about .about-overlap > .wp-block-flavor-universal-block:not(.about-photo) h3::before {
+		text-align: center !important;     /* 見出しを右寄せ→中央寄せに */
+		width: auto !important;            /* fit-content解除＝全幅で中央 */
+	}
+
+	/* SERVICE: 狭幅(≤599)では2×2カードが細くなり、本体ネイビーの固定高(179px)を説明文が超えて
+	 *  見切れ＋下の「事業内容一覧を見る」ボタンに重なる。→ 4枚を1カラム(全幅)に＋本体高さをautoに
+	 *  して内容に追従させ、見切れ・重なりを解消（ユーザー選択: 1カラム）。 */
+	.sec-service .wp-block-flavor-universal-block.service-grid > .wp-block-flavor-universal-block {
+		flex: 1 1 100% !important;
+		max-width: none !important;
+	}
+	.sec-service .wp-block-flavor-universal-block.service-grid > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block {
+		height: auto !important;   /* カード本体ネイビーの固定高(179px)を解除＝説明文の見切れ防止 */
+	}
+
+	/* FV: 狭幅(≤599)では min-height:900px が端末画面より高く、縦中央寄せのコンテンツ（タイトル/本文/CTA）が
+	 *  画面下方へ落ちてボタンが見切れる。FV高さを1画面(100svh)に縮め、コンテンツを画面中央＝可視位置へ上げる。 */
+	.sec-fv .swell-block-fullWide__inner > .wp-block-flavor-universal-block {
+		min-height: 100svh !important;
+	}
+	/* FV CTA: 2ボタンの横並びが幅142pxまで圧縮され「お問い合わせ」等が複数行に折返す。
+	 *  縦並び＋全幅にして各ボタンを1行に収める（ユーザー要望: 縦並び・改行させない）。 */
+	.sec-fv .wp-block-flavor-universal-block.fv-cta {
+		flex-direction: column !important;
+		align-items: stretch !important;
+	}
+	.sec-fv .wp-block-flavor-universal-block.fv-cta .wp-block-buttons,
+	.sec-fv .wp-block-flavor-universal-block.fv-cta .wp-block-button {
+		width: 100% !important;
+	}
+	.sec-fv .wp-block-flavor-universal-block.fv-cta .wp-block-button__link {
+		display: block !important;
+		width: 100% !important;
+		white-space: nowrap !important;   /* 全幅なら収まるが念のため改行を抑止 */
+	}
+	/* FV装飾ロゴ: FVを100svhに縮めた結果、bottom基準の装飾ロゴが縦並びボタンに重なる。
+	 *  ヘッダーに既にASTERRAロゴがあり装飾ロゴは省略可のため、狭幅(≤599)では非表示にする。 */
+	.sec-fv figure.wp-block-image[data-img-id="img-945ec509"] {
+		display: none !important;
+	}
+
+	/* NEWS: 狭幅では外周枠が画面端から32px・コンテンツが64pxと余白過多で内容が窮屈。
+	 *  画面端の余白（枠まで）を16pxに詰め、コンテンツpaddingも32px（枠内16px）にして表示幅を確保
+	 *  （ユーザー要望: 画面端のスペース16px）。 */
+	.sec-news::before {
+		max-width: calc(100% - 32px) !important;   /* 外周枠を画面端から16pxに（左右計32px） */
+	}
+	.sec-news .wp-block-flavor-universal-block.news-inner {
+		padding-left: 32px !important;
+		padding-right: 32px !important;
+	}
+	/* NEWS: 「全てを見る」ボタンを中央寄せ（スマホ・ユーザー要望）。PCはデザイン通り左寄せ維持。 */
+	.sec-news .wp-block-flavor-universal-block.news-btnrow {
+		justify-content: center !important;
+	}
+
+	/* SERVICE: 両端スペースをNEWSと同じく16pxに（ユーザー要望）。外周枠を画面端16pxに＋
+	 *  カードの左右padding(16px)を解除し、導入文と同じ位置（枠から16px＝画面端から32px）に揃える。 */
+	.sec-service::before {
+		max-width: calc(100% - 32px) !important;   /* 外周枠を画面端から16pxに */
+	}
+	.sec-service .wp-block-flavor-universal-block.service-grid {
+		padding-left: 0 !important;
+		padding-right: 0 !important;
+	}
+
+	/* COMPANY 透かし文字「ASTERRA CORPORATION」: 狭幅では top:120px だとCOMPANY見出しと重なる。
+	 *  「会社概要を見る」ボタン下端(571px)〜コラージュ上端(635px)の空きへ移動（ユーザー要望 image#16）。
+	 *  ＋ left:-8px だと左が見切れるため中央配置に（left:50%+translateX）。 */
+	.sec-company::before {
+		top: 588px !important;
+		left: 50% !important;
+		transform: translateX(-50%) !important;   /* 左見切れ解消＝水平中央 */
+	}
+
+	/* ABOUT US: 端のスペースを16pxに（ユーザー要望）。外周枠が無いのでコンテンツ用コンテナの
+	 *  左右padding(32px)を16pxに詰め、見出し・写真・カードを直接画面端16pxに（写真・カードも拡幅）。 */
+	.sec-about .wp-block-flavor-universal-block.about-container {
+		padding-left: 16px !important;
+		padding-right: 16px !important;
+		padding-top: 48px !important;    /* タイトル上の余白を128→48に（狭幅で広すぎ・ユーザー要望） */
+		row-gap: 0 !important;           /* タイトル→写真の間隔を詰める（合成親margin-top:32のみ残り計32pxに） */
+	}
+}
+
+/* =============================================================
+   SWELL既定の #content margin-bottom:81px（本文〜フッター間の余白）を打ち消す。
+   このページは最終セクションが全幅CONTACT（ネイビー）で、その下の余分な余白を無くし
+   フッターへ地続きにする（ユーザー要望: お問い合わせ下の余分なスペース削除）。 */
+#content { margin-bottom: 0 !important; }
+

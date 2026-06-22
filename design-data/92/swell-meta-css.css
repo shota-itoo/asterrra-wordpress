@@ -1,0 +1,12 @@
+/* =============================================================
+   CONTACT ブログパーツ (post_id=92) 限定カスタムCSS
+   - ボタンのドロップシャドウ（Figma Component7: shadow-lg相当）
+   - セクション上端の境界線
+   ============================================================= */
+.sec-contact .wp-block-button .wp-block-button__link {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+              0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+.sec-contact {
+  border-top: 1px solid #020c1b;
+}

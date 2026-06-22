@@ -1,0 +1,590 @@
+/* =====================================================================
+ * サービス内容ページ（post_id 27）ページ限定カスタムCSS
+ * 全セレクタを各セクションのフッククラス（.sec-*）配下に限定。
+ * サイト全体・テーマ既定セレクタを無印で上書きしない。
+ * このCSSは post 27 の swell_meta_css に入りページ27にのみ出力される。
+ * ===================================================================== */
+
+/* ---------------------------------------------------------------------
+ * 1. Hero（.sec-hero）— 黒グラデオーバーレイ
+ * 背景写真ラッパー（universal-block）の ::before が写真（z-index:0）。
+ * ::after に左→右の黒グラデを重ねる（z-index:1）。
+ * テキスト群（content group）は position:relative; z-index:2 で前面。
+ * → 写真(0) < グラデ(1) < テキスト(2) の重なり順で可読性を確保。
+ * datapack 01_HERO §4: linear-gradient(to right, rgba(0,0,0,.8) 0%, .5 50%, 0 100%)
+ * ------------------------------------------------------------------- */
+.sec-hero > .swell-block-fullWide__inner > .wp-block-flavor-universal-block::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	pointer-events: none;
+	background: linear-gradient(
+		to right,
+		rgba(0, 0, 0, 0.8) 0%,
+		rgba(0, 0, 0, 0.5) 50%,
+		rgba(0, 0, 0, 0) 100%
+	);
+}
+
+/* 1-b. Hero見出しは左揃え。
+ * is-style-section_ttl が text-align:center を当てるが、デザインでは Hero の
+ * SERVICE ラベル・見出し・本文はすべて左揃え。Hero の h1 のみ左へ戻す。
+ * ※ SERVICE/VALUE/FLOW のセクションタイトルは中央寄せが正なので対象外。 */
+.sec-hero h1.is-style-section_ttl {
+	text-align: left;
+}
+
+/* 1-c. Hero テキスト領域のコンテナ修正。
+ * 元実装は背景ラッパー(__inner直下のUB)に固定 padding-left:144px / right:80px を持ち、
+ * フルワイドでは良いが 960px 等の中間幅でテキストが右（中央）に寄ってしまう。
+ * → 固定paddingを解除し、テキスト群（その内側UB）を
+ *   max-width:1280px・中央寄せ・左右padding 32px のレスポンシブコンテナにする。
+ *   フルワイド=1280中央寄せ / 中間幅=幅いっぱい＋左右32px、で一定の余白配置になる。 */
+.sec-hero > .swell-block-fullWide__inner > .wp-block-flavor-universal-block {
+	padding-left: 0;
+	padding-right: 0;
+}
+.sec-hero
+	> .swell-block-fullWide__inner
+	> .wp-block-flavor-universal-block
+	> .wp-block-flavor-universal-block {
+	width: 100%;
+	max-width: 1280px;
+	margin-left: auto;
+	margin-right: auto;
+	padding-left: 32px;
+	padding-right: 32px;
+	box-sizing: border-box;
+}
+
+/* ---------------------------------------------------------------------
+ * 2. Introduction（.sec-intro）
+ * ------------------------------------------------------------------- */
+
+/* 2-0. Intro見出しは左揃え（左テキストカラムなのでデザインは左。
+ * is-style-section_ttl の中央寄せを打ち消す。特異性を .is-style-section_ttl まで
+ * 上げないと SWELL 既定(0,2,0)に負けるため Heroと同じ書き方にする） */
+.sec-intro h2.is-style-section_ttl {
+	text-align: left;
+}
+
+/* 2-a. 背景パネル #f2f2f2（datapack 02_INTRO §4: 1180×465・左側・背面）
+ * セクション左端アンカーの breakout（中央寄せ1152コンテナの外へ張り出す）。
+ * .sec-intro は position:relative・overflow:visible 済。
+ * full-wide __inner は z-index:1 のため、::before(z-index:0) は自動で背面。
+ * 高さは固定465pxだと狭幅でテキストが伸びてパネル下にはみ出すため、
+ * top:62px / bottom:71px の伸縮にしてテキスト量へ追従させる。
+ * （セクション下端〜テキスト下端の余白は実測でPC/狭幅とも一定=96px。
+ *   bottom:71px でフルワイド時は元の 62→527px=465px と同一、狭幅では下へ伸びる） */
+.sec-intro::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 62px;
+	bottom: 71px;
+	width: 1180px;
+	max-width: 82%; /* 基準幅未満でセクション右端を越えない保険 */
+	background-color: #f2f2f2;
+	z-index: 0;
+}
+
+/* 2-b. 右画像の drop-shadow（datapack 02_INTRO §4: shadow-lg 相当）
+ * 右カラム画像は figure.wp-block-image（img.wp-image-33）。 */
+.sec-intro figure.wp-block-image {
+	box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1),
+		0px 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+/* ---------------------------------------------------------------------
+ * 3. CONTACT（.sec-contact）
+ * ------------------------------------------------------------------- */
+
+/* 3-a. セクション上端 border（datapack 06_CONTACT: border-top 1px solid #020c1b） */
+.sec-contact {
+	border-top: 1px solid #020c1b;
+}
+
+/* 3-b. CTAボタンの box-shadow（datapack 06_CONTACT: shadow-lg 相当） */
+.sec-contact .wp-block-button__link {
+	box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1),
+		0px 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+/* ---------------------------------------------------------------------
+ * 4. 見出しのSWELL既定装飾打ち消し（ページ限定）
+ * デザインのセクションタイトルは「英字ラベル＋和文見出し＋ゴールド横罫」を
+ * 別ブロックで構成するため、h2 自体の装飾箱（ネイビー背景 + ::before 枠）は不要。
+ * 対象は is-style-section_ttl を持たず SWELL 既定箱が残る h2:
+ *   .sec-service h2「サービス内容」 / .sec-flow h2「ご相談から…」 / .sec-contact h2「CONTACT」
+ * （SERVICE/VALUE の h3 と INTRO/VALUE の見出しは is-style-section_ttl で箱なし＝対象外）
+ * 背景・横padding・::before枠を打ち消し、design要件の左寄せ/中央寄せは現状維持。
+ * padding-bottom は元の縦リズムを保つため残す。
+ * ------------------------------------------------------------------- */
+.sec-service > .swell-block-fullWide__inner h2.wp-block-heading,
+.sec-flow > .swell-block-fullWide__inner h2.wp-block-heading,
+.sec-contact > .swell-block-fullWide__inner h2.wp-block-heading {
+	background-color: transparent;
+	padding-top: 0;
+	padding-right: 0;
+	padding-left: 0;
+}
+
+.sec-service > .swell-block-fullWide__inner h2.wp-block-heading::before,
+.sec-flow > .swell-block-fullWide__inner h2.wp-block-heading::before,
+.sec-contact > .swell-block-fullWide__inner h2.wp-block-heading::before {
+	display: none;
+}
+
+/* =====================================================================
+ * 狭幅（960px等の中間幅）の左右余白
+ * 各セクションは max-width:1152px 中央寄せのみで左右paddingが無く、960px幅では
+ * コンテンツが画面端まで広がり右端の要素（FLOWの「アフターフォロー」/VALUEの3つ目 等）が
+ * 見切れる。full-wide の __inner に左右32pxの padding を入れて端で切れないようにする。
+ * 内側の中央寄せラッパー(max-width:1152)はそのままなので、フルワイドの見た目
+ * （1152中央寄せ・左144px）は維持され、狭幅でのみ32pxの余白が効く。
+ * ※ .sec-hero は 1-c で別途コンテナ調整済みのため対象外。
+ * ===================================================================== */
+.sec-intro > .swell-block-fullWide__inner,
+.sec-service > .swell-block-fullWide__inner,
+.sec-value > .swell-block-fullWide__inner,
+.sec-flow > .swell-block-fullWide__inner,
+.sec-contact > .swell-block-fullWide__inner {
+	box-sizing: border-box;
+	padding-left: 32px;
+	padding-right: 32px;
+}
+
+/* ---------------------------------------------------------------------
+ * Service カードグリッド: 狭幅でも2列(2×2)を維持（カード間ギャップ=デザイン値20px）
+ * カードは固定566px。960px(内側896px)では2枚(1132px)が入りきらず1列に折り返していた。
+ * 直下カード(.has-ub-direction-column)を calc(50% - 10px)(列ギャップ20の半分)にして容器追従で常に2列。
+ *   → グリッド1152px時=566px(=design) / 896px時=438px。
+ * カード間ギャップは **デザイン値の 20px**。
+ * （以前は本体幅566固定で右端が画像556より10px出る段差があり「くっついて」見えたが、
+ *   その後ネイビー本体を width:100% で画像と同幅に揃えたため、20pxで正しく分離して見える）
+ * min-width:0 で中身の最小幅を解除して縮め、カード内画像は width:100% でカード幅に追従。
+ * ------------------------------------------------------------------- */
+.sec-service
+	.wp-block-flavor-universal-block.has-ub-direction-row.has-ub-justify-center {
+	column-gap: 20px;
+}
+.sec-service
+	.wp-block-flavor-universal-block.has-ub-direction-row.has-ub-justify-center
+	> .wp-block-flavor-universal-block.has-ub-direction-column {
+	width: calc(50% - 10px);
+	max-width: calc(50% - 10px);
+	min-width: 0;
+	flex-grow: 0;
+	flex-shrink: 1;
+}
+.sec-service
+	.wp-block-flavor-universal-block.has-ub-direction-row.has-ub-justify-center
+	> .wp-block-flavor-universal-block.has-ub-direction-column
+	figure.wp-block-image {
+	width: 100%;
+}
+.sec-service
+	.wp-block-flavor-universal-block.has-ub-direction-row.has-ub-justify-center
+	> .wp-block-flavor-universal-block.has-ub-direction-column
+	figure.wp-block-image img {
+	width: 100%;
+	height: auto;
+}
+
+/* ---------------------------------------------------------------------
+ * Service カードタイトル(h3)は左揃え
+ * デザインではカードのタイトル「不動産売買サポート」等は説明文と左端が揃う左揃え。
+ * is-style-section_ttl が text-align:center を当てているため、カードの h3 のみ左へ戻す。
+ * 特異性を .is-style-section_ttl(0,2,0) に勝たせるため h3.is-style-section_ttl(0,2,1) で記述。
+ * ※ セクションタイトル「サービス内容」は h2（is-style-section_ttl 未付与）なので対象外＝中央寄せ維持。
+ * ------------------------------------------------------------------- */
+.sec-service h3.is-style-section_ttl {
+	text-align: left;
+}
+
+/* ---------------------------------------------------------------------
+ * Service カード画像とネイビー本体の境界の「にじみ/がたつき」対策
+ * 画像下端がレイアウト上 半ピクセル(例 1896.5px)に乗り、DPR1表示で画像とネイビーの
+ * 境界に薄い1pxのアンチエイリアス線が出る（レイアウト自体はpx完全一致）。
+ * 画像を display:block 化（inlineのベースライン由来の隙間も排除）＋ figure を
+ * margin-bottom:-1px で本体に1px重ね、境界の半端ピクセル線をネイビーで覆って消す。
+ * ------------------------------------------------------------------- */
+.sec-service
+	.wp-block-flavor-universal-block.has-ub-direction-row.has-ub-justify-center
+	> .wp-block-flavor-universal-block.has-ub-direction-column
+	figure.wp-block-image {
+	margin-bottom: -1px;
+}
+.sec-service
+	.wp-block-flavor-universal-block.has-ub-direction-row.has-ub-justify-center
+	> .wp-block-flavor-universal-block.has-ub-direction-column
+	figure.wp-block-image img {
+	display: block;
+}
+
+/* ---------------------------------------------------------------------
+ * Service カードのネイビー本体の固定幅(566px)を解除しカード幅に追従
+ * 【がたつきの真因】カードを calc(50%-20px)=556px に縮め画像を width:100%(556) にした一方、
+ * ネイビー本体は tree の固定 sizeWidth:566px のままで、画像(556)と本体(566)に右端10pxの段差が出ていた。
+ * 本体も width:100% にして画像とカード端を揃える（左右とも一致）。
+ * 対象=カード(.has-ub-direction-column)直下のUB(=ネイビー本体)。番号/アイコンは本体内の絶対配置なので無影響。
+ * ------------------------------------------------------------------- */
+.sec-service
+	.wp-block-flavor-universal-block.has-ub-direction-row.has-ub-justify-center
+	> .wp-block-flavor-universal-block.has-ub-direction-column
+	> .wp-block-flavor-universal-block {
+	width: 100%;
+	max-width: 100%;
+}
+
+/* ---------------------------------------------------------------------
+ * VALUE セクションの見出しブロックは左寄せ
+ * デザインでは VALUEラベル・見出し「ASTERRAが大切にしていること」・ゴールド横罫が
+ * すべて左端（横罫が左x=0）。※ SERVICE/FLOW は横罫が中央で中央寄せだが、VALUE だけ左寄せ。
+ * 見出し群コンテナ(has-ub-align-center=align-items:center)を flex-start にし、
+ * 見出し/ラベルの text-align も左へ。value 3カラムの行は別コンテナなので無影響。
+ * ------------------------------------------------------------------- */
+.sec-value
+	.wp-block-flavor-universal-block.has-ub-direction-column.has-ub-justify-center.has-ub-align-center {
+	align-items: flex-start;
+}
+.sec-value
+	.wp-block-flavor-universal-block.has-ub-direction-column.has-ub-justify-center.has-ub-align-center
+	h2,
+.sec-value
+	.wp-block-flavor-universal-block.has-ub-direction-column.has-ub-justify-center.has-ub-align-center
+	p {
+	text-align: left;
+}
+
+/* ---------------------------------------------------------------------
+ * VALUE 各バリュー項目（お客様目線 等）のアイコンは上揃え
+ * デザインでは「アイコン｜(見出し+説明文)」の横並びでアイコン上端＝見出し上端。
+ * 実装は valueCol 行が align-items:center（縦中央）のため、狭幅で説明文が3行に
+ * 折り返すとアイコンが下へ下がって目立つ。flex-start で上端揃えにする。
+ * 対象は valueCol 行(justify-flex-start)のみ。外側 Values Row(justify-center)は無対象。
+ * ※ tree.js 側の layoutAlign も 'flex-start' に更新済み（ソース整合）。
+ * ------------------------------------------------------------------- */
+.sec-value
+	.wp-block-flavor-universal-block.has-ub-direction-row.has-ub-justify-flex-start.has-ub-align-center {
+	align-items: flex-start;
+}
+
+/* ---------------------------------------------------------------------
+ * FLOW ステップタイトル(h3)のSWELL既定装飾(下線)を打ち消し
+ * 各ステップ見出し（お問い合わせ/ヒアリング/…）は is-style-section_ttl を持たない
+ * 素の core/heading(h3) のため、SWELL既定の h3::before（2pxの下線）が出る。
+ * デザインにこの罫線は無いので ::before/::after と border を打ち消す。
+ * 対象は .sec-flow 配下の h3 のみ（FLOWのh3は5ステップ見出しだけ）。
+ * ※ テーマ既定スタイルの打ち消し＝ユーザー削除依頼済み。
+ * ------------------------------------------------------------------- */
+.sec-flow h3::before,
+.sec-flow h3::after {
+	display: none;
+	content: none;
+}
+.sec-flow h3 {
+	border: none;
+}
+
+/* =====================================================================
+ * レスポンシブ（≤959px）— SPデザイン(Figma node 1:3284・幅768)再現
+ * 対象幅 600〜959px（599px以下の実機スマホ最適化は別途）。
+ * 全ルールを @media (max-width:959px) 配下に限定 → PC(≥960px)は一切不変。
+ * 本文6セクションのみ（ヘッダー/フッターはSWELL側）。
+ * ===================================================================== */
+@media (max-width: 959px) {
+
+	/* ---- Service: 2×2グリッド → 1列（カード幅max571・中央寄せ・カード間縦20px） ----
+	 * SPはカード(571px)を1列縦積み・コンテンツ内中央寄せ。
+	 * PC用の width/max-width:calc(50%-10px) を上書きして1枚/行に。
+	 * justify-center で折返した各カードが中央寄せ、tree の gap20 が縦間隔になる。 */
+	.sec-service
+		.wp-block-flavor-universal-block.has-ub-direction-row.has-ub-justify-center
+		> .wp-block-flavor-universal-block.has-ub-direction-column {
+		width: 100%;
+		max-width: 571px;
+	}
+
+	/* ---- Flow: 5横一列 → 3+2段（03↔04間の矢印は非表示） ----
+	 * ステップ行を折返し可にし、各stepを「3個/行」の固定幅 calc((100%-104px)/3) に。
+	 *   104px = 行内の矢印2個(40) + gap16×4(64)。3step+2arrow=5要素=4gap。
+	 * 3個目の矢印(直下figureのうち3番目=03と04の間)を display:none にして
+	 * step04 が新しい行へ落ち、「01→02→03」「04→05」の3+2段になる。
+	 * 子に紛れる flavor拡張の <style>(display:none) はフレックス対象外で無影響。 */
+	.sec-flow
+		.wp-block-flavor-universal-block.has-ub-direction-row.has-ub-justify-center.has-ub-align-flex-start {
+		flex-wrap: wrap;
+		row-gap: 48px;
+	}
+	.sec-flow
+		.wp-block-flavor-universal-block.has-ub-direction-row.has-ub-justify-center.has-ub-align-flex-start
+		> .wp-block-flavor-universal-block.has-ub-direction-column {
+		flex: 0 0 calc((100% - 104px) / 3);
+		max-width: calc((100% - 104px) / 3);
+		min-width: 0;
+	}
+	.sec-flow
+		.wp-block-flavor-universal-block.has-ub-direction-row.has-ub-justify-center.has-ub-align-flex-start
+		> figure.wp-block-image:nth-of-type(3) {
+		display: none;
+	}
+
+}
+
+
+/* SPカードタイトルの意味区切り改行(<br class="sp-only-br">)はPC/タブレットでは無効化。
+ * 対象: Service カード3「リフォーム・／リノベーション」・カード4「不動産／コンサルティング」。
+ * ≤599 でのみ display:inline に戻す（下記メディアブロック内）。 */
+.sec-service .sp-only-br {
+	display: none;
+}
+
+
+/* =========================================================================
+ * SP実機(≤599px) 375px最適化レイヤー — 既存≤959層・PC(≥960)の上に追加（既存は不変）。
+ * セクションごとに段階的に追加していく。
+ * ========================================================================= */
+@media (max-width: 599px) {
+	/* 01_HERO ----------------------------------------------------------------
+	 *  H1はSP用の縮小指定が無くPC値(font48px / line-height60px固定)を引きずるため、
+	 *  375pxでは各意味チャンクが幅オーバーしさらに途中改行＝5行に崩れる（利用可能幅 約311px）。
+	 *  「お客様の未来に寄り添う、」(12字) が1行で収まる22pxへ縮小。改行は既存の<br>で
+	 *  意味区切り2行（…寄り添う、／不動産サービスを。）になる。
+	 *  letter-spacing は inline 0.1em を比例継承（22pxで2.2px）。固定60pxのlhを1.5へ。 */
+	.sec-hero h1.wp-block-heading {
+		font-size: 22px !important;
+		line-height: 1.5 !important;
+	}
+
+	/* 02_INTRO ---------------------------------------------------------------
+	 *  PCの2カラム（左テキスト/右画像 flex:1）が≤599でも row のままで、375pxでは
+	 *  テキスト列129px・画像列54pxに潰れ、画像(inline 544px)が右で見切れる。
+	 *  (1) flex行 ub-7d94fb8a を縦積み(column)に切替＝テキスト→画像の順でフル幅。
+	 *  (2) 画像列/figure/img をカラム幅フィット（inline width:544px解除）、元544×400の
+	 *      cover比率を aspect-ratio で維持（375pxで約311×229）。
+	 *  (3) H2「不動産は、未来をつくる資産。」(30px)は縮小しないと途中改行が残るため、
+	 *      Hero H1(22px)を超えない 20px へ＝375pxで1行に収まり見出し階層も整合。 */
+	.sec-intro
+		.wp-block-flavor-universal-block[data-ub-id="ub-7d94fb8a"] {
+		flex-direction: column !important;
+		align-items: stretch !important;
+		/* この行は自前で左右32pxを持つため、外側innerの32pxと二重(計64px)になり375pxで
+		 *  コンテンツが247pxに圧縮されていた。≤599では行側を0にしinner側32pxだけ残す＝311px。 */
+		padding-left: 0 !important;
+		padding-right: 0 !important;
+		/* 下パディングはPC値96pxのままだと画像下にグレーパネル外の白余白が大きく出る。
+		 *  ≤599では48pxに詰め、下のグレー余白を適量にする（::before bottom:0と併用）。 */
+		padding-bottom: 48px !important;
+	}
+	.sec-intro
+		.wp-block-flavor-universal-block[data-ub-id="ub-23015d6e"] {
+		width: 100% !important;
+	}
+	.sec-intro figure.wp-block-image,
+	.sec-intro figure.wp-block-image img {
+		width: 100% !important;
+	}
+	.sec-intro figure.wp-block-image img {
+		height: auto !important;
+		/* 元画像アセット(544×400)は最下部に約5pxの白帯が焼き込まれている。
+		 *  box比率を 544/400→544/382 に詰め object-position:top でクロップ＝下端を約10px切り、
+		 *  画像直下に見えていた焼込み白帯を隠す（上端は維持）。 */
+		aspect-ratio: 544 / 382 !important;
+		object-fit: cover !important;
+		object-position: center top !important;
+	}
+	.sec-intro h2.wp-block-heading {
+		font-size: 20px !important;
+		line-height: 1.5 !important;
+	}
+	/*  グレー背景パネル(::before)はPCの左フラッシュ(left:0 / width1180 / max-width82%)のままだと、
+	 *  375pxでコンテンツ右側がパネル外(白地)に乗る。≤599では左右16px余白のカード状に広げ、
+	 *  本文・見出しをパネル内に収める（ユーザー要望: 端16pxスペースまで拡張）。 */
+	.sec-intro::before {
+		left: 16px !important;
+		right: 16px !important;
+		width: auto !important;
+		max-width: none !important;
+		/* PCは bottom:71px で下に白余白を残すが、≤599では画像直下に白帯が見えるため
+		 *  セクション下端まで延ばして白帯を消す（下の余白は row padding-bottom:48px で確保）。 */
+		bottom: 0 !important;
+	}
+
+	/* 03_SERVICE -------------------------------------------------------------
+	 *  inner の左右パディングが基底32pxのままで、カード（および見出し等）が左右32px余白に
+	 *  なっていた。≤599では16pxに詰め、カードを左右16px余白まで広げる（ユーザー要望）。 */
+	.sec-service > .swell-block-fullWide__inner {
+		padding-left: 16px !important;
+		padding-right: 16px !important;
+	}
+	/*  カード本文(ネイビー)はPC値の固定高さ(例 ub-ca54e208=346px)を引きずり、375pxでは
+	 *  本文が折返し増で約431px必要となり下端がはみ出し→次カードに被っていた。
+	 *  ≤599では各カード(grid ub-0159f76f 直下)とその本文ボックスを height:auto にして内容追従に。 */
+	.sec-service [data-ub-id="ub-0159f76f"] > .wp-block-flavor-universal-block,
+	.sec-service
+		[data-ub-id="ub-0159f76f"]
+		> .wp-block-flavor-universal-block
+		> .wp-block-flavor-universal-block {
+		height: auto !important;
+	}
+	/*  カード本文(ネイビー)はPCで「左ガター padding-left:134px ＋ 01・アイコンを絶対配置」した
+	 *  2カラム構成。375pxではタイトル・本文が右163pxに押し込まれ窮屈（タイトルも途中改行）。
+	 *  ≤599ではヘッダー3要素を横1行、本文を下行に組み替える（ユーザー要望:
+	 *   「アイコン → 01 → タイトル」を1行、その下に本文フル幅）。
+	 *  全4カード同一構造のため構造セレクタで一括指定（navy box = grid直下カードの直下UB）。
+	 *  navy box内: 先頭div=01 / h3=タイトル / p=本文 / 末尾div=アイコン。 */
+	.sec-service
+		[data-ub-id="ub-0159f76f"]
+		> .wp-block-flavor-universal-block
+		> .wp-block-flavor-universal-block {
+		padding-left: 24px !important;
+		padding-right: 24px !important;
+		/* 横並び＋折返し可。ヘッダー3要素は1行(align中央)、本文は flex-basis:100% で次行へ。 */
+		flex-direction: row !important;
+		flex-wrap: wrap !important;
+		align-items: center !important;
+		column-gap: 12px !important;
+		row-gap: 14px !important;
+	}
+	/* 01・アイコンの絶対配置を解除して縦積みに参加させる（左ガター廃止） */
+	.sec-service
+		[data-ub-id="ub-0159f76f"]
+		> .wp-block-flavor-universal-block
+		> .wp-block-flavor-universal-block
+		> div:first-of-type,
+	.sec-service
+		[data-ub-id="ub-0159f76f"]
+		> .wp-block-flavor-universal-block
+		> .wp-block-flavor-universal-block
+		> div:last-of-type {
+		position: static !important;
+	}
+	/* 表示順(横1行): アイコン(1) → 01(2) → タイトル(3)。本文(4)は次行フル幅。 */
+	.sec-service
+		[data-ub-id="ub-0159f76f"]
+		> .wp-block-flavor-universal-block
+		> .wp-block-flavor-universal-block
+		> div:last-of-type {
+		order: 1 !important; /* アイコン */
+	}
+	.sec-service
+		[data-ub-id="ub-0159f76f"]
+		> .wp-block-flavor-universal-block
+		> .wp-block-flavor-universal-block
+		> div:first-of-type {
+		order: 2 !important; /* 01 */
+	}
+	.sec-service
+		[data-ub-id="ub-0159f76f"]
+		> .wp-block-flavor-universal-block
+		> .wp-block-flavor-universal-block
+		> h3 {
+		order: 3 !important; /* タイトル */
+		margin: 0 !important; /* 行内で詰める（縦リズム由来の上下marginを除去） */
+		/* アイコン＋番号の右隣で残り幅を埋め、長いタイトルは次行に落とさず
+		 *  その位置で内部折返し（min-width:0でcontent幅以下に縮められるようにする）。 */
+		flex: 1 1 0 !important;
+		min-width: 0 !important;
+	}
+	/* 本文は flex-basis:100% で必ず次の行へ回しフル幅で読ませる */
+	.sec-service
+		[data-ub-id="ub-0159f76f"]
+		> .wp-block-flavor-universal-block
+		> .wp-block-flavor-universal-block
+		> p {
+		order: 4 !important;
+		flex: 0 0 100% !important;
+	}
+	/* タイトルの意味区切り改行を≤599でのみ有効化（カード3=リフォーム・/リノベーション、
+	 *  カード4=不動産/コンサルティング）。char境界の不自然な折返しを意味区切りに置換。 */
+	.sec-service .sp-only-br {
+		display: inline !important;
+	}
+
+	/* 04_VALUE ---------------------------------------------------------------
+	 *  3つの価値が横3カラム(各約60px)のまま375pxで潰れ、見出しが縦書き化・アイコンが幅9pxに
+	 *  圧縮されていた。≤599では縦積み1カラムに（各項目はアイコン左＋見出し/本文右のまま）。 */
+	/* 左右余白を16pxに（Serviceと統一。基底32px→16px）。 */
+	.sec-value > .swell-block-fullWide__inner {
+		padding-left: 16px !important;
+		padding-right: 16px !important;
+	}
+	/* セクション見出しを階層整合で縮小（Hero H1 22px以下・intro と同方針）。 */
+	.sec-value h2.wp-block-heading {
+		font-size: 20px !important;
+		line-height: 1.5 !important;
+	}
+	/* 3価値の横並び行 → 縦積み（各項目フル幅）。 */
+	.sec-value [data-ub-id="ub-4ebd4bc2"] {
+		flex-direction: column !important;
+		align-items: stretch !important;
+		row-gap: 28px !important;
+	}
+	.sec-value
+		[data-ub-id="ub-4ebd4bc2"]
+		> .wp-block-flavor-universal-block {
+		width: 100% !important;
+	}
+	/* 項目間の縦区切り線(0幅×高96)は縦積みでは不要 → 非表示。 */
+	.sec-value [data-ub-id="ub-c15ed7e0"],
+	.sec-value [data-ub-id="ub-9ba9411f"] {
+		display: none !important;
+	}
+	/* アイコン(SVG 64×64・inline指定)は flex で幅9pxに潰れていた → 縮小禁止で素サイズ復元。 */
+	.sec-value [data-ub-id="ub-4ebd4bc2"] figure.wp-block-image {
+		flex: 0 0 auto !important;
+	}
+	/* 本文の手動<br>はPC列幅用。375pxでは「…想いを理解」の後で改行＝「理解／し、」と
+	 *  フレーズが分断される。≤599では手動改行を無効化し自然な折返しに任せる。 */
+	.sec-value [data-ub-id="ub-4ebd4bc2"] p br {
+		display: none !important;
+	}
+
+	/* 05_FLOW ----------------------------------------------------------------
+	 *  既存≤959は5ステップを「3+2」折返し(各 calc((100%-104px)/3))にするため、375pxでは
+	 *  各ステップ約58pxに潰れ見出し・本文が縦書き化。≤599では縦1列の中央カードに組み替え、
+	 *  ステップ間の矢印を下向きに回転（3+2用に隠していた3本目の矢印も復活）。 */
+	/* 左右余白を16pxに（Service/Valueと統一）。 */
+	.sec-flow > .swell-block-fullWide__inner {
+		padding-left: 16px !important;
+		padding-right: 16px !important;
+	}
+	/* セクション見出しを階層整合で20pxに。 */
+	.sec-flow h2.wp-block-heading {
+		font-size: 20px !important;
+		line-height: 1.5 !important;
+	}
+	/* ステップ行: 3+2折返し(row/wrap) → 縦1列(column・中央寄せ)。 */
+	.sec-flow [data-ub-id="ub-c7cdd90a"] {
+		flex-direction: column !important;
+		flex-wrap: nowrap !important;
+		align-items: center !important;
+		row-gap: 8px !important;
+	}
+	/* 各ステップを全幅(中央カード)に。≤959の calc 幅指定を打ち消す。 */
+	.sec-flow
+		[data-ub-id="ub-c7cdd90a"]
+		> .wp-block-flavor-universal-block {
+		flex: 0 0 auto !important;
+		width: 100% !important;
+		max-width: none !important;
+	}
+	/* ステップ間の矢印(figure)を下向きに回転。3+2で隠していた3本目も復活させ全4本表示。 */
+	.sec-flow
+		[data-ub-id="ub-c7cdd90a"]
+		> figure.wp-block-image {
+		display: block !important;
+		flex: 0 0 auto !important;
+		transform: rotate(90deg) !important;
+		margin: 4px 0 !important;
+	}
+}
+
+/* =============================================================
+   SWELL既定の #content margin-bottom:81px（本文〜フッター間の余白）を打ち消す。
+   このページは最終セクションが全幅CONTACT（ネイビー）で、その下の余分な余白を無くし
+   フッターへ地続きにする（ユーザー要望: お問い合わせ下の余分なスペース削除）。 */
+#content { margin-bottom: 0 !important; }
+

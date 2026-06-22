@@ -1,0 +1,152 @@
+/* =========================================================================
+ * ページ26（会社概要 / company）限定 装飾CSS — swell_meta_css
+ * ブロック属性で表現できなかった装飾（HEROグラデ/PROFILEマーカー色・影/
+ * CONTACTボタン影・上端border/見出しSWELL既定打ち消し）を
+ * 各セクションのフッククラス配下に限定して補う。
+ * 全セレクタは .sec-* 配下に限定（サイト全体・テーマ既定を無印で上書きしない）。
+ * datapack「装飾レイヤー」章 ＋ 各 verify-report「残課題」の実値を使用。
+ * 実DOM調査（agent-browser）で対象UB/リスト/ボタンの実クラスを確認済み。
+ * ========================================================================= */
+
+
+/* =========================================================================
+ * 1. HERO（.sec-hero）
+ * ========================================================================= */
+
+/* 1-a. 背景写真の上にネイビー横グラデオーバーレイ（左→右）
+ *  背景写真ラッパ ub-12cc325c は ::before に背景写真を持つ（実DOM確認:
+ *  position:relative / ::before に hero-bg-city.jpg）。
+ *  グラデは同UBの ::after に重ね、写真(::before)より前面・
+ *  コンテンツ群(ub-28cef7de は z-index:2)より背面に置く。
+ *  → z-index:1 で「写真の上・テキストの下」に確定（テキストは最前面のまま）。
+ *  グラデ stop は datapack §4-2 の正確値: 0.9→0.6(50%)→0(100%)。 */
+.sec-hero .fv-bg::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	pointer-events: none;
+	background: linear-gradient(
+		to right,
+		rgba(19, 28, 48, 0.9) 0%,
+		rgba(19, 28, 48, 0.6) 50%,
+		rgba(19, 28, 48, 0) 100%
+	);
+}
+
+/* 1-b. テキスト群をグラデ(::after z-index:1)より前面に確定（可読性確保） */
+.sec-hero .fv-content {
+	position: relative;
+	z-index: 2;
+}
+
+
+/* =========================================================================
+ * 2. PROFILE（.sec-profile）
+ * ========================================================================= */
+
+/* 2-a. 箇条書きマーカー色（事業内容・加盟団体の丸ドット）
+ *  リストは core/list（class: asterrra-dotlist / list-style:disc）。
+ *  ::marker は属性で色指定不可のため、現状 #1F2937（濃色）→ ゴールド #C8A97E に。
+ *  実DOM確認: .sec-profile ul.asterrra-dotlist li ×2リスト・各4項目。 */
+.sec-profile .asterrra-dotlist li::marker {
+	color: #C8A97E;
+}
+
+/* 2-b. テーブル枠の軽い影（軽い浮き・datapack §4 / §要CSS2）
+ *  対象はテーブル全体を内包する枠UB ub-f8061732（896px幅・shadow:none）。
+ *  UB box-shadow extension はカスタム値で未生成のため後段付与。 */
+.sec-profile .profile-table {
+	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+
+/* =========================================================================
+ * 3. CONTACT（.sec-contact） — トップページ(post 7)と同じCSSを複製
+ * ========================================================================= */
+
+/* 3-a. CTAボタンの box-shadow（shadow-lg 相当・verify-report 残課題1）
+ *  対象は .sec-contact のボタン。core/button に box-shadow 属性が無いため後段付与。 */
+.sec-contact .wp-block-button__link {
+	box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+/* 3-b. セクション上端 border-top（#020c1b・verify-report 残課題2）
+ *  loos/full-wide に全幅 border を出す属性が無いため後段付与。 */
+.sec-contact {
+	border-top: 1px solid #020c1b;
+}
+
+/* 3-c. 見出し(h2)の SWELL 既定ベタ塗り背景打ち消し
+ *  実DOM確認: .sec-contact h2 に SWELL 既定 bg #04384c（rgb(4,56,76)）+
+ *  padding 27px/36px が残る。デザインはフラットなゴールド文字見出し。
+ *  ページ限定で打ち消す（HERO h1 は装飾無し＝打ち消し不要だった）。 */
+.sec-contact h2.wp-block-heading {
+	background: none;
+	padding: 0;
+}
+.sec-contact h2.wp-block-heading::before,
+.sec-contact h2.wp-block-heading::after {
+	display: none;
+	content: none;
+}
+
+
+/* =========================================================================
+ * 4. レスポンシブ（会社概要テーブル）— TB(≤959)/SP(≤599) のみ適用
+ *    ※ @media は 960px以上(PC)には一切かからない＝PCデザインは不変。
+ *    SPデザイン(768px幅 node 1:3755)に合わせる：ラベル列固定・値列可変・左右余白。
+ * ========================================================================= */
+
+/* 長ラベル「適格請求書事業者登録番号」のSP専用改行。
+ * ラベル内の <br> はこの適格行だけが持つ → クラス無しでも一意に狙える
+ * （WPはフロント出力時に <br> の class を剥がすためクラス指定は使わない）。
+ * PC/TB は <br> を display:none で無効化＝1行（PCデザイン不変）。 */
+.sec-profile .pf-label br { display: none; }
+
+/* --- タブレット（≤959）：768デザインに一致 --- */
+@media (max-width: 959px) {
+	/* テーブルの左右に32px余白（端に密着させない） */
+	.sec-profile .pf-inner { padding-left: 32px; padding-right: 32px; }
+	/* パンくず〜テーブルの上余白を縮小（既定80px→32px。flavor既定を高specificityで上書き） */
+	.sec-profile .pf-inner.wp-block-flavor-universal-block { padding-top: 32px; }
+	/* ラベル列256px固定（縮ませない）／値列は残り幅を可変で占有 */
+	.sec-profile .pf-label { flex: 0 0 256px; }
+	.sec-profile .pf-value { flex: 1 1 0; min-width: 0; }
+}
+
+/* --- スマホ（≤600）：2列のまま余白を詰めて値の表示幅を確保（案A） --- */
+@media (max-width: 600px) {
+	.sec-profile .pf-inner { padding-left: 16px; padding-right: 16px; }
+	.sec-profile .pf-label { flex: 0 0 132px; }
+	.sec-profile .pf-label br { display: inline; }
+	/* 細い列で「事業者登録番号」が3行化しないよう字間を詰める（SPのみ） */
+	.sec-profile .pf-label p { letter-spacing: 0; }
+	/* セル左右paddingをスマホで詰める（flavor既定 値48px/ラベル16px を高specificityで上書き）
+	 * → 値の表示幅が 99px → ~190px に拡大し折返しを減らす。PCには無関係（@media内）。 */
+	.sec-profile .pf-value.wp-block-flavor-universal-block { padding-left: 16px; padding-right: 16px; }
+	.sec-profile .pf-label.wp-block-flavor-universal-block { padding-left: 8px; padding-right: 8px; }
+}
+
+/* =============================================================
+   SP(≤599px) FVテキストをサービスページ(/service/)FVと同じサイズ感に揃える。
+   service FV(SP): 英字ラベル24px / 見出し22px。company FVの「会社概要」48px・「COMPANY」20pxを合わせる。
+   600px以上は従来(会社概要48px / COMPANY20px)を維持＝不変。 */
+@media (max-width: 599px) {
+  /* 見出し「会社概要」: 48px→28px（タイトルとして service見出し(22px)より一回り大きく） */
+  .sec-hero h1.is-style-section_ttl {
+    font-size: 28px !important;
+    line-height: 40px !important;
+  }
+  /* 英字ラベル「COMPANY」: 20px→24px（service「SERVICE」ラベル相当） */
+  .sec-hero p[style*="font-size:20px"] {
+    font-size: 24px !important;
+  }
+}
+
+/* =============================================================
+   SWELL既定の #content margin-bottom:81px（本文〜フッター間の余白）を打ち消す。
+   このページは最終セクションが全幅CONTACT（ネイビー）で、その下の余分な余白を無くし
+   フッターへ地続きにする（ユーザー要望: お問い合わせ下の余分なスペース削除）。 */
+#content { margin-bottom: 0 !important; }
+

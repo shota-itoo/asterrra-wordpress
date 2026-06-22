@@ -37,3 +37,42 @@
 .wp-block-flavor-universal-block.has-background {
 	padding: 0;
 }
+
+/* 下層固定ページ: SWELL既定の「ページタイトル帯＋パンくず」を非表示
+   各固定ページは独自のFV(ヒーロー)を持つため不要。フロントページ(home)は除外。
+   ※SWELLにタイトル/パンくず非表示の純正トグルが無いためCSSで対応（ユーザー要望・可逆） */
+.page:not(.home) .c-pageTitle,
+.page:not(.home) .p-breadcrumb {
+	display: none;
+}
+/* タイトル帯を消した後に残る上部の空白を詰め、FVをヘッダー直下に密着させる
+   （.l-content の上パディング64px ＋ .post_content の上マージン64px を固定ページ限定でゼロに） */
+.page:not(.home) .l-content {
+	padding-top: 0;
+}
+.page:not(.home) .post_content {
+	margin-top: 0;
+}
+
+/* ============================================================
+   CONTACT CTA（ブログパーツ）用 装飾 — グローバル
+   ブロックパーツ化したCONTACTセクションを、どのページに貼っても
+   装飾が出るよう .sec-contact 配下に限定したルールをここに置く
+   （ブロック属性で表現できない3点: ボタン影 / セクション上端border /
+   SWELL既定h2装飾の打ち消し）。セレクタは全て .sec-contact 配下＝他に影響なし。
+   ============================================================ */
+.sec-contact .wp-block-button__link {
+	box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+.sec-contact {
+	border-top: 1px solid #020c1b;
+}
+.sec-contact h2.wp-block-heading {
+	background: none;
+	padding: 0;
+}
+.sec-contact h2.wp-block-heading::before,
+.sec-contact h2.wp-block-heading::after {
+	display: none;
+	content: none;
+}

@@ -1,0 +1,397 @@
+/* =========================================================================
+ * ページ29（お問い合わせ）限定 装飾CSS — swell_meta_css
+ * ブロック属性で表現できない装飾（Heroグラデ／カード影／SMFフォーム整形／
+ * CONTACT帯のボタン影・上端border）を各セクションのフッククラス配下に限定して補う。
+ * 全セレクタは .sec-hero / .sec-form / .sec-contactband 配下に限定（サイト全体・
+ * テーマ既定・他ページのSMFフォームを無印で上書きしない）。
+ * datapack 01_HERO / 02_FORM の実値、トップページ7のCSSパターンを踏襲。
+ * ========================================================================= */
+
+
+/* =========================================================================
+ * 1. Hero（.sec-hero）— 左→右ネイビーグラデオーバーレイ
+ * ========================================================================= */
+
+/* 1-a. 背景写真の上に左濃→右透明グラデを重ねる（左側テキスト可読性確保）
+ *  背景写真ラッパ ub-b3acf295 は ::before に背景写真を持つ（実DOM確認）。
+ *  グラデは ::after で重ね、写真(::before)より前面・コンテンツ(z-index:2)より背面。
+ *  → z-index:1 で「写真の上・テキストの下」に確定。datapack §4 のグラデ実値を使用。 */
+.sec-hero .wp-block-flavor-universal-block[data-ub-id="ub-b3acf295"]::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	pointer-events: none;
+	background: linear-gradient(
+		90deg,
+		rgba(19, 28, 48, 0.9) 0%,
+		rgba(19, 28, 48, 0.6) 50%,
+		rgba(19, 28, 48, 0) 100%
+	);
+}
+
+
+/* =========================================================================
+ * 2. Formカード影（.sec-form）
+ * ========================================================================= */
+
+/* 2-a. 左フォーム器（白カード ub-05509fb1）にごく弱い影（datapack §3-A / §4-2） */
+.sec-form .wp-block-flavor-universal-block[data-ub-id="ub-05509fb1"] {
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+/* 2-b. 右ネイビーカード（ub-81aac225）に shadow-lg 相当（datapack §3-B / §4-1） */
+.sec-form .wp-block-flavor-universal-block[data-ub-id="ub-81aac225"] {
+	box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+
+/* =========================================================================
+ * 3. SMFフォーム内部（.sec-form 配下の Snow Monkey Forms 出力）
+ *  すべて .sec-form 配下に限定（他ページのSMFフォームに波及させない）。
+ *  実出力クラス: .smf-item / .smf-item__col--label / .smf-item__label__text /
+ *  .smf-item__col--controls / .smf-*-control__control / .smf-button-control__control
+ * ========================================================================= */
+
+/* 3-a. 各項目を「ラベル左(192px) + コントロール右(flex)」の横並び行に。
+ *  SMF既定では .smf-item は display:block（縦積み）。flex 行へ。項目間 spacing は 24px。 */
+.sec-form .smf-form .smf-item {
+	display: flex;
+	align-items: flex-start;
+	gap: 16px;
+	margin-bottom: 24px;
+}
+.sec-form .smf-form .smf-item:last-child {
+	margin-bottom: 0;
+}
+.sec-form .smf-item__col--label {
+	flex: 0 0 192px;
+	width: 192px;
+	padding-top: 12px; /* 入力欄の上端とラベル文字を揃える */
+}
+.sec-form .smf-item__col--controls {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+/* 3-b. ラベル: Noto Serif JP / 14px / 本文色 #111827 */
+.sec-form .smf-item__label__text {
+	font-family: "Noto Serif JP", serif;
+	font-weight: 500;
+	font-size: 14px;
+	line-height: 1.6;
+	letter-spacing: 0.1em;
+	color: #111827;
+}
+
+/* 3-c. 必須バッジ: 必須入力を含む項目のラベルに「必須」ゴールドバッジを付与。
+ *  SMF は必須マーカーを出力しないため、required バリデーションを持つ
+ *  コントロールを内包する項目を :has() で検出して ::after で描画（CSSのみ）。
+ *  背景 #C8A97E・白文字・小角丸2px・小padding（datapack 参考メモ）。 */
+.sec-form .smf-item:has([data-validations~="required"]) .smf-item__label__text::after {
+	content: "必須";
+	display: inline-block;
+	margin-left: 8px;
+	padding: 2px 8px;
+	background: #c8a97e;
+	color: #fff;
+	font-family: "Noto Sans JP", sans-serif;
+	font-weight: 400;
+	font-size: 10px;
+	line-height: 1.4;
+	letter-spacing: 0;
+	border-radius: 2px;
+	vertical-align: middle;
+}
+
+/* 3-d. 入力欄（text/email/tel/select/textarea）: border 1px #e5e7eb・角丸0・
+ *  padding 15px・Noto Sans JP・プレースホルダ #9ca3af（datapack 参考メモ） */
+.sec-form .smf-text-control__control,
+.sec-form .smf-email-control__control,
+.sec-form .smf-tel-control__control,
+.sec-form .smf-select-control__control,
+.sec-form .smf-textarea-control__control {
+	width: 100%;
+	box-sizing: border-box;
+	border: 1px solid #e5e7eb;
+	border-radius: 0;
+	padding: 15px;
+	font-family: "Noto Sans JP", sans-serif;
+	font-weight: 400;
+	font-size: 14px;
+	line-height: 1.6;
+	color: #1f2937;
+	background-color: #fff;
+}
+.sec-form .smf-text-control__control::placeholder,
+.sec-form .smf-textarea-control__control::placeholder {
+	color: #9ca3af;
+	opacity: 1;
+}
+/* select の選択前（プレースホルダ option）色味も淡く */
+.sec-form .smf-select-control__control {
+	color: #1f2937;
+}
+.sec-form .smf-textarea-control__control {
+	min-height: 140px;
+	resize: vertical;
+}
+
+/* 3-e. チェックボックス行（プライバシー同意）: 中央寄せ。
+ *  ラベル列は不要なので非表示にし、コントロールを中央配置。 */
+.sec-form .smf-item:has(.smf-checkboxes-control) {
+	justify-content: center;
+}
+.sec-form .smf-item:has(.smf-checkboxes-control) .smf-item__col--label {
+	display: none;
+}
+.sec-form .smf-item:has(.smf-checkboxes-control) .smf-item__col--controls {
+	flex: 0 0 auto;
+}
+.sec-form .smf-checkboxes-control .smf-label,
+.sec-form .smf-checkbox-control {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+.sec-form .smf-checkbox-control__label {
+	font-family: "Noto Sans JP", sans-serif;
+	font-size: 13px;
+	color: #1f2937;
+}
+
+/* 3-f. 送信ボタン（.smf-button-control__control）: 背景 #C8A97E・白文字・角丸0・
+ *  適度なpadding・中央寄せ・影。ホバーは僅かに濃く（datapack 参考メモ）。 */
+.sec-form .smf-action {
+	text-align: center;
+	margin-top: 32px;
+}
+.sec-form .smf-button-control {
+	display: inline-block;
+}
+.sec-form .smf-button-control__control {
+	background-color: #c8a97e;
+	background-image: none; /* SMF既定の白→グレーグラデ(linear-gradient(#fff,#eee))を打ち消し、ゴールド地を見せる */
+	color: #fff;
+	border: none;
+	border-radius: 0;
+	padding: 16px 64px;
+	font-family: "Noto Serif JP", serif;
+	font-weight: 400;
+	font-size: 14px;
+	letter-spacing: 0.1em;
+	cursor: pointer;
+	box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+	transition: background-color 0.2s ease;
+}
+.sec-form .smf-button-control__control:hover,
+.sec-form .smf-button-control__control:focus {
+	background-color: #b8966a;
+	background-image: none;
+}
+
+/* 3-g. レスポンシブ: モバイル(≤599px)は項目をラベル上・入力下の縦積みに戻す */
+@media (max-width: 599px) {
+	.sec-form .smf-form .smf-item {
+		flex-direction: column;
+		gap: 8px;
+	}
+	.sec-form .smf-item__col--label {
+		flex: 0 0 auto;
+		width: 100%;
+		padding-top: 0;
+	}
+	/* コントロール列を全幅に（base の align-items:flex-start だと縦積み時に
+	 *  クロス軸が伸びず入力欄が狭くなるため、SPでは明示的に全幅化） */
+	.sec-form .smf-item__col--controls {
+		width: 100%;
+		flex: 1 1 auto;
+	}
+	.sec-form .smf-button-control__control {
+		padding: 16px 40px;
+		width: 100%;
+		max-width: 320px;
+	}
+}
+
+
+/* =========================================================================
+ * 4. CONTACT帯（.sec-contactband）
+ * ========================================================================= */
+
+/* 4-a. CTAボタンの box-shadow（shadow-lg 相当・トップページ同様） */
+.sec-contactband .wp-block-button__link {
+	box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+/* 4-b. セクション上端 border-top 1px（トップページ同様） */
+.sec-contactband {
+	border-top: 1px solid #020c1b;
+}
+
+/* ============================================================
+ * 3-g. プライバシー&送信エリアの調整（デザイン 1:4092 一致・追記）
+ *   注記文中央化/小さめ/グレー・リンク金、チェック必須バッジ、ボタン矢印、上罫
+ *   すべて .sec-form 配下限定
+ * ============================================================ */
+/* プライバシー注記文（チェックの上）: 中央・11px・#6b7280・上に1px区切り線 */
+.sec-form .smf-privacy-note {
+	width: 100%;
+	text-align: center;
+	font-size: 11px;
+	line-height: 22px;
+	letter-spacing: 0.275px;
+	color: #6b7280;
+	margin: 8px 0 24px;
+	padding-top: 57px;
+	border-top: 1px solid #e5e7eb;
+}
+.sec-form .smf-privacy-note a {
+	color: #C8A97E;
+	text-decoration: none;
+}
+.sec-form .smf-privacy-note a:hover {
+	text-decoration: underline;
+}
+/* 同意チェックの「必須」バッジ（チェックボックスのオプションラベルに付与。
+ *   item__label 列は非表示のため、controls 側のオプションラベルにバッジを出す） */
+.sec-form .smf-item:has(.smf-checkboxes-control) .smf-checkbox-control__label::after {
+	content: "必須";
+	display: inline-block;
+	margin-left: 8px;
+	background: #C8A97E;
+	color: #fff;
+	font-size: 10px;
+	line-height: 15px;
+	letter-spacing: 1px;
+	padding: 2px 8px;
+	border-radius: 2px;
+	vertical-align: middle;
+}
+/* 送信/確認ボタンに矢印「→」（デザイン準拠） */
+.sec-form .smf-button-control__control::after {
+	content: "→";
+	margin-left: 16px;
+	font-weight: 400;
+}
+
+/* ============================================================
+ * 4. パンくず（.sec-breadcrumb）の端余白
+ *   <1024px 幅でパンくずが画面左端に密着するため、左右16pxの余白を確保。
+ *   box-sizing で全幅時もはみ出さない。
+ * ============================================================ */
+.sec-breadcrumb .swell-block-fullWide__inner {
+	padding-left: 16px !important;
+	padding-right: 16px !important;
+	box-sizing: border-box;
+}
+
+/* ============================================================
+ * 5. レスポンシブ（〜1024px）: Formセクションの2カードが窮屈になるため
+ *   フォームカード・ネイビー連絡先カードの左右内側paddingを16pxに縮小。
+ *   960px幅で内容（特に連絡先カードの会社名）が折返しで詰まるのを緩和。
+ *   data-ub-id は使わず :has(> .snow-monkey-form) ＋隣接で2カードを安定特定。
+ * ============================================================ */
+@media (max-width: 1024px) {
+	.sec-form .wp-block-flavor-universal-block:has(> .snow-monkey-form),
+	.sec-form .wp-block-flavor-universal-block:has(> .snow-monkey-form) ~ .wp-block-flavor-universal-block {
+		padding-left: 16px !important;
+		padding-right: 16px !important;
+	}
+}
+
+/* ============================================================
+ * 6. Hero テキスト領域を max1280px・両端32pxに
+ *   従来は外側UB[0]に固定 padding-left:144px があり、960px幅で
+ *   テキストが過剰インデント（中央寄り）に見えた。背景(UB[0]::before/::after)は
+ *   全幅維持のまま、UB[0]のpaddingを0にし、テキストUB[1](max1280)を
+ *   margin auto で中央寄せ＋両端32px paddingにする。
+ *   data-ub-id は使わず構造セレクタ（再シリアライズ耐性・既存グラデCSS保護）。
+ * ============================================================ */
+.sec-hero .swell-block-fullWide__inner > .wp-block-flavor-universal-block {
+	padding-left: 0 !important;
+	padding-right: 0 !important;
+}
+.sec-hero .swell-block-fullWide__inner > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block {
+	max-width: 1280px;
+	margin-left: auto !important;
+	margin-right: auto !important;
+	padding-left: 32px !important;
+	padding-right: 32px !important;
+	box-sizing: border-box;
+}
+
+/* ============================================================
+ * 7. ネイビー連絡先カード内の揃え（デザイン 1:4105 準拠）
+ *   上(電話ブロック=お電話/番号/受付時間)=中央寄せ、
+ *   下(会社情報 見出し)=左寄せ（その下の住所等と揃える）。
+ *   ネイビーカード = フォームカード(:has(>.snow-monkey-form))の隣接UB。data-ub-id不使用。
+ * ============================================================ */
+/* 電話ブロック（h3を持たず・区切り線でない直下UB）= 中央寄せ */
+.sec-form .wp-block-flavor-universal-block:has(> .snow-monkey-form) ~ .wp-block-flavor-universal-block
+  > .wp-block-flavor-universal-block:not(:has(h3)):not(.has-background) {
+	text-align: center !important;
+}
+/* 電話アイコン＋番号の行（入れ子UB）も中央に */
+.sec-form .wp-block-flavor-universal-block:has(> .snow-monkey-form) ~ .wp-block-flavor-universal-block
+  > .wp-block-flavor-universal-block:not(:has(h3)):not(.has-background) .wp-block-flavor-universal-block {
+	justify-content: center !important;
+}
+/* 会社情報 見出し（h3）= 左寄せ */
+.sec-form .wp-block-flavor-universal-block:has(> .snow-monkey-form) ~ .wp-block-flavor-universal-block h3 {
+	text-align: left !important;
+}
+
+/* ============================================================
+ * 8. レスポンシブ TB/SP（≤959px）: Formセクションの2カラムを縦積みに
+ *   PC(≥960px)は一切変更しない（このメディアクエリ内のみ）。
+ *   row(フォームカードを孫に持つUB)を flex-direction:column、
+ *   フォームカード・ネイビーカードを全幅に。SPデザイン(1:4192)準拠＝
+ *   フォーム上・連絡先カード下の縦積み。
+ *   セレクタは data-ub-id 不使用（:has 構造）。
+ * ============================================================ */
+@media (max-width: 959px) {
+	.sec-form .wp-block-flavor-universal-block:has(> .wp-block-flavor-universal-block > .snow-monkey-form) {
+		flex-direction: column !important;
+	}
+	.sec-form .wp-block-flavor-universal-block:has(> .snow-monkey-form),
+	.sec-form .wp-block-flavor-universal-block:has(> .snow-monkey-form) ~ .wp-block-flavor-universal-block {
+		width: 100% !important;
+		max-width: 100% !important;
+		flex-basis: auto !important;
+	}
+}
+
+/* ============================================================
+ * 9. SP（≤599px）: Formセクションのコンテンツ枠ガターを 64px→16px
+ *   375px幅でリード文・カードが左右64pxガターで圧迫され窮屈に折返すため。
+ *   .sec-form の inner 直下コンテンツUB（maxWidth1152・固定padding64px）を対象。
+ *   CONTACT帯は既に16px、Heroは別処理(32px)なので対象外。PC/TB(≥600)は不変。
+ * ============================================================ */
+@media (max-width: 599px) {
+	.sec-form .swell-block-fullWide__inner > .wp-block-flavor-universal-block {
+		padding-left: 16px !important;
+		padding-right: 16px !important;
+	}
+}
+
+/* =============================================================
+   SP(≤599px) FVテキストをサービスページ(/service/)FVと同じサイズ感に揃える（company/と統一）。
+   service FV(SP): 英字ラベル24px / 見出し22px。見出し(48px)はタイトルのため28pxに、ラベル(20px)は24pxに。
+   600px以上は従来(48px / 20px)を維持＝不変。 */
+@media (max-width: 599px) {
+  .sec-hero h1.is-style-section_ttl {
+    font-size: 28px !important;
+    line-height: 40px !important;
+  }
+  .sec-hero p[style*="font-size:20px"] {
+    font-size: 24px !important;
+  }
+}
+
+/* =============================================================
+   SWELL既定の #content margin-bottom:81px（本文〜フッター間の余白）を打ち消す。
+   このページは最終セクションが全幅CONTACT（ネイビー）で、その下の余分な余白を無くし
+   フッターへ地続きにする（ユーザー要望: お問い合わせ下の余分なスペース削除）。 */
+#content { margin-bottom: 0 !important; }
+

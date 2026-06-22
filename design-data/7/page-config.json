@@ -1,0 +1,29 @@
+{
+  "isTopPage": true,
+  "postId": 7,
+  "fvMethod": "block",
+  "colors": {
+    "main": "#1b2a4a",
+    "accent": "#c2a24c",
+    "text": "#3a4256",
+    "bg": "#ffffff"
+  },
+  "fontFamilies": ["Noto Serif JP", "Noto Sans JP"],
+  "fontsLoaded": false,
+  "proposals": [
+    {
+      "type": "option",
+      "command": "wp option update show_on_front page && wp option update page_on_front 7",
+      "reason": "デザインはヒーロー＋NEWS/SERVICE/ABOUT/COMPANY/CONTACT の6セクション構成のトップページだが、現在 show_on_front=posts / page_on_front=0 のままで、ページID 7（トップページ）がフロントページに割り当てられていない",
+      "scope": "サイト全体",
+      "required": true
+    },
+    {
+      "type": "font",
+      "command": "themes/swell_child/functions.php の wp_enqueue_scripts に Google Fonts（Noto Serif JP / Noto Sans JP）の enqueue を追加",
+      "reason": "FVのロゴ・見出しは明朝系、本文は和文ゴシックでデザインされているが、子テーマ・mu-plugins のどこにも Google Fonts 等の Web フォント読込が無い（text-font-family.php はブロック属性でフォント名をCSS指定するだけで <link> は出力しない）。フォント未読込のままだと端末既定フォントで表示されデザイン再現できない",
+      "scope": "サイト全体",
+      "required": true
+    }
+  ]
+}

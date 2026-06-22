@@ -16,3 +16,15 @@ uploads/**/*-[0-9]*x[0-9]*.png
 uploads/**/*-[0-9]*x[0-9]*.gif
 uploads/**/*-[0-9]*x[0-9]*.webp
 uploads/**/*-scaled.*
+
+# --- design-data は WordPress 反映データ(html/css/js)のみ管理する ---
+# 画像は作業副産物（本番画像は uploads/ が正・参照はwp-content/uploads URL）
+design-data/**/*.png
+design-data/**/*.jpg
+design-data/**/*.jpeg
+design-data/**/*.svg
+design-data/**/*.gif
+design-data/**/*.webp
+# 誤生成フォルダ・編集バックアップ
+undefined/
+*.orig

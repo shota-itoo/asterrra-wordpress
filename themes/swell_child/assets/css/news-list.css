@@ -1,0 +1,286 @@
+/**
+ * News List Block — asterrra/news-list
+ *
+ * design-data/28/sections/02_NEWSLIST/datapack.md 厳守。
+ * 全セレクタを .asterrra-news 配下に限定（サイト全体を汚さない）。
+ *
+ * 配色:
+ *   #c8a97e ゴールド（アクティブタブ / 一部ラベル）
+ *   #131C30 濃紺（お知らせラベル / アクティブページ番号）
+ *   #1F2937 主テキスト（日付 / タイトル）
+ *   #4B5563 副テキスト（非アクティブタブ / 番号）
+ *   #9CA3AF 薄グレー（… / 矢印）
+ *   #E5E7EB 罫線・枠線
+ * フォント: 見出し系=Noto Serif JP / UI文字=Noto Sans JP
+ */
+
+.asterrra-news {
+	background-color: #ffffff;
+}
+
+/* 実コンテンツ幅 896px・中央寄せ / 3パーツ縦並び gap 64px */
+.asterrra-news .asterrra-news__inner {
+	max-width: 896px;
+	margin-left: auto;
+	margin-right: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 64px;
+	box-sizing: border-box;
+}
+
+/* ──────────────────────────────────────────────
+   1. カテゴリフィルタ（横並び・中央寄せ・gap 32px）
+   ────────────────────────────────────────────── */
+.asterrra-news .asterrra-news__filters {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	gap: 32px;
+	width: 100%;
+}
+
+.asterrra-news .asterrra-news__filter {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 44px;
+	padding: 12px 16px; /* 非アクティブ: px16 py12 */
+	box-sizing: border-box;
+	font-family: "Noto Sans JP", sans-serif;
+	font-weight: 500;
+	font-size: 14px;
+	line-height: 20px;
+	letter-spacing: 1.4px;
+	color: #4B5563;
+	text-align: center;
+	text-decoration: none;
+	border-radius: 0;
+	transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.asterrra-news .asterrra-news__filter:hover {
+	color: #131C30;
+}
+
+/* アクティブタブ: ゴールド背景・白文字・px32 py12・薄影 */
+.asterrra-news .asterrra-news__filter.is-active {
+	background-color: #c8a97e;
+	color: #ffffff;
+	padding: 12px 32px;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.asterrra-news .asterrra-news__filter.is-active:hover {
+	color: #ffffff;
+}
+
+/* ──────────────────────────────────────────────
+   2. ニュースリスト（行を縦積み・罫線区切り）
+   ────────────────────────────────────────────── */
+.asterrra-news .asterrra-news__list {
+	width: 100%;
+	border-top: 1px solid #E5E7EB; /* 最上行の上にも線 */
+}
+
+.asterrra-news .asterrra-news__row {
+	display: flex;
+	align-items: center;
+	min-height: 78px;
+	padding: 24px 32px;
+	box-sizing: border-box;
+	border-bottom: 1px solid #E5E7EB;
+	text-decoration: none;
+	transition: background-color 0.2s ease;
+}
+
+.asterrra-news .asterrra-news__row:hover {
+	background-color: #fafafa;
+}
+
+/* 左枠（日付 + カテゴリラベル）= 320px 固定 / gap 24px */
+.asterrra-news .asterrra-news__meta {
+	display: flex;
+	align-items: center;
+	gap: 24px;
+	width: 320px;
+	flex: 0 0 320px;
+	box-sizing: border-box;
+}
+
+.asterrra-news .asterrra-news__date {
+	font-family: "Noto Serif JP", serif;
+	font-weight: 400;
+	font-size: 16px;
+	line-height: 24px;
+	letter-spacing: 0.8px;
+	color: #1F2937;
+	white-space: nowrap;
+}
+
+/* カテゴリラベル: 幅112px固定 / 11px 白文字 / 背景はインラインstyleで出し分け */
+.asterrra-news .asterrra-news__label {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 112px;
+	flex: 0 0 112px;
+	box-sizing: border-box;
+	padding: 6px 12px;
+	font-family: "Noto Sans JP", sans-serif;
+	font-weight: 400;
+	font-size: 11px;
+	line-height: 16.5px;
+	letter-spacing: 1.1px;
+	color: #ffffff;
+	text-align: center;
+	border-radius: 0;
+}
+
+/* タイトル: 残り全幅 / min-width 0 で折返し許可 */
+.asterrra-news .asterrra-news__title {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-family: "Noto Serif JP", serif;
+	font-weight: 400;
+	font-size: 16px;
+	line-height: 24px;
+	letter-spacing: 0.4px;
+	color: #1F2937;
+}
+
+/* 右端 chevron-right 16x16 / pl-16 */
+.asterrra-news .asterrra-news__arrow {
+	display: inline-flex;
+	align-items: center;
+	padding-left: 16px;
+	flex: 0 0 auto;
+}
+
+.asterrra-news .asterrra-news__chevron {
+	display: block;
+	width: 16px;
+	height: 16px;
+}
+
+.asterrra-news .asterrra-news__empty {
+	width: 100%;
+	text-align: center;
+	font-family: "Noto Serif JP", serif;
+	font-size: 16px;
+	color: #4B5563;
+	padding: 48px 0;
+}
+
+/* ──────────────────────────────────────────────
+   3. ページネーション（40x40 / 中央寄せ / gap 8px）
+   ────────────────────────────────────────────── */
+.asterrra-news .asterrra-news__pagination {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	width: 100%;
+}
+
+.asterrra-news .asterrra-news__page {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	box-sizing: border-box;
+	background-color: #ffffff;
+	border: 1px solid #E5E7EB;
+	border-radius: 0;
+	font-family: "Noto Serif JP", serif;
+	font-weight: 400;
+	font-size: 14px;
+	line-height: 20px;
+	color: #4B5563;
+	text-align: center;
+	text-decoration: none;
+	white-space: nowrap;
+	transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.asterrra-news a.asterrra-news__page:hover {
+	background-color: #f3f4f6;
+}
+
+/* アクティブページ: 濃紺ベタ + 白文字 + 小shadow / 枠線なし */
+.asterrra-news .asterrra-news__page.is-active {
+	background-color: #131C30;
+	border-color: #131C30;
+	color: #ffffff;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+/* 省略「…」: 薄グレー文字・クリック不可 */
+.asterrra-news .asterrra-news__page--dots {
+	color: #9CA3AF;
+	letter-spacing: 1.4px;
+}
+
+/* prev / next 矢印ボタン: 白地・枠線・グレー矢印 */
+.asterrra-news .asterrra-news__page--prev .asterrra-news__chevron {
+	transform: rotate(180deg);
+}
+
+/* ──────────────────────────────────────────────
+   レスポンシブ（モバイルで左枠を縮める）
+   ────────────────────────────────────────────── */
+@media (max-width: 599px) {
+	.asterrra-news .asterrra-news__inner {
+		gap: 40px;
+	}
+	.asterrra-news .asterrra-news__filters {
+		gap: 16px;
+	}
+	.asterrra-news .asterrra-news__row {
+		flex-wrap: wrap;
+		/* 右に矢印(絶対配置)用のクリアランス32pxを確保。position:relative で arrow の基準に。 */
+		padding: 20px 32px 20px 8px;
+		position: relative;
+	}
+	.asterrra-news .asterrra-news__meta {
+		width: auto;
+		flex: 1 1 100%;
+		margin-bottom: 8px;
+	}
+	.asterrra-news .asterrra-news__title {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+	/* 矢印を絶対配置で右端・縦中央に固定。flexフローから外すことで、
+	   タイトルが何行に折返しても矢印が次の行へ回り込まず常に右端に留まる。 */
+	.asterrra-news .asterrra-news__arrow {
+		position: absolute;
+		right: 8px;
+		top: 50%;
+		transform: translateY(-50%);
+		padding-left: 0;
+	}
+}
+
+/* ──────────────────────────────────────────────
+   タブレット帯（600〜959px）: ニュース行の左[日付+カテゴリ]枠が広すぎる(600pxで約58%)のを
+   40%に縮め、タイトルを残り(約60%)に＝依頼の「左4:右6」。gapを16pxに詰めて40%幅に収める。
+   ※PC（≥960px）の固定320px と SP（≤599px）の縦スタックは変更しない（範囲を限定）。
+   ────────────────────────────────────────────── */
+@media (min-width: 600px) and (max-width: 959px) {
+	.asterrra-news .asterrra-news__meta {
+		width: 40%;
+		flex: 0 0 40%;
+		/* 横並びだと日付+カテゴリ(約218px)が40%(600pxで195px)に収まらずはみ出すため、
+		   この帯では日付をカテゴリの上に縦積みにして40%幅に収める（ユーザー選択）。 */
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+	}
+	.asterrra-news .asterrra-news__title {
+		flex: 1 1 60%;
+	}
+}

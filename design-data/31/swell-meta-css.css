@@ -1,0 +1,920 @@
+/* =============================================================
+   ABOUT (/about/) post_id=31 ページ限定カスタムCSS（swell_meta_css）
+   - 全ルールは各セクションのフッククラス配下に限定（サイト全体は不変）
+   - 装飾値は design-data/31/sections/NN/datapack.md の「装飾レイヤー/検証用設計値」より
+   - 実DOM（http://localhost:8918/about/）調査済みのセレクタを使用
+   ============================================================= */
+
+/* 欧文ラベル用フォント Jost（Philosophy/Mission/Value のラベルはブロック属性で
+   font-family:'Jost' 指定済みだがサイト未読込のため、ここで読み込む。FUTURE は下で適用） */
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap');
+
+/* =============================================================
+   1. FV (.sec-about-fv)
+   ============================================================= */
+
+/* ①背景写真の上に重ねる 左→右ネイビーグラデオーバーレイ
+   FVラッパー（最外 universal-block / column・center・center / position:relative / overflow:hidden）の
+   ::before は backgroundImage拡張が背景写真の描画に使用済み。よって ::after にグラデを置く。
+   datapack 01_FV §4: linear-gradient(90.54deg, rgba(10,22,49,.9) 1.22% → .6 47.62% → .1 99.71%) */
+.sec-about-fv .wp-block-flavor-universal-block.has-ub-justify-center.has-ub-align-center::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1; /* 背景写真(::before)の上・テキスト群(z-index:2)の下 */
+  pointer-events: none;
+  background: linear-gradient(90.54deg,
+    rgba(10, 22, 49, 0.9) 1.22%,
+    rgba(10, 22, 49, 0.6) 47.62%,
+    rgba(10, 22, 49, 0.1) 99.71%);
+}
+
+/* ②見出し・サブコピーの可読性確保 text-shadow（datapackに明示値なし → 標準値で補強） */
+.sec-about-fv h1.is-style-section_ttl,
+.sec-about-fv h2.is-style-section_ttl,
+.sec-about-fv .wp-block-paragraph {
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* ③右下装飾ロゴ：ソース logo2.png はネイビー版 → FV上は白表示が正
+   filter で白化。さらに backgroundImage拡張の子ルールが figure に position:relative を
+   与えて right/bottom が効かない既知事象のため、absolute を !important で確定。
+   配置基準(offsetParent)はFVの全幅コンテナ＝ビューポート幅なので right は画面右端からの距離。
+   右位置はレスポンシブ（ユーザー要望）:
+   ・≥1200px(フルワイド): 1200px幅の中央寄せコンテンツ想定の右端に整列 → right=(100vw−1200)/2
+   ・<1200px: 画面右端から32px
+   ・max(32px, …) で「右端から最低32px」を確保（1200〜1264pxの帯も32pxで連続）。 */
+.sec-about-fv figure.wp-block-image.has-custom-border {
+  position: absolute !important;
+  right: max(32px, calc((100vw - 1200px) / 2)) !important;
+  bottom: 140px !important;  /* ロゴ画像を余白除去版(logo2_tight)へ差し替え＝figure=実ロゴに。
+                                旧figure(222×170/余白込)時の見えるロゴ下端の位置(section下から約140px)を維持。 */
+  left: auto !important;
+  top: auto !important;
+  margin: 0 !important;
+  z-index: 3; /* テキスト群より前面 */
+}
+.sec-about-fv figure.wp-block-image.has-custom-border img {
+  /* ネイビー版ロゴを白化 */
+  filter: brightness(0) invert(1);
+}
+
+/* =============================================================
+   2. Value (.sec-value)
+   建物写真の上方向食い出し・右ブリードはブロック属性（absolute配置）＋
+   既定の overflow:visible で実現済み、建物写真の box-shadow も属性適用済み。
+   横スクロール抑止のため、body 由来の overflow-x はテーマ既定に委ねる。
+   念のためページ側でも overflow を明示（テーマ更新で絞られた場合の保険）。
+   ============================================================= */
+.sec-value,
+.sec-value .swell-block-fullWide__inner,
+.sec-value .wp-block-flavor-universal-block.has-ub-direction-row {
+  overflow: visible;
+}
+
+/* =============================================================
+   3. Message (.sec-message)
+   ============================================================= */
+
+/* ①背面の透かし文字「MESSAGE」 datapack 06 §4:
+   200px / Noto Serif JP 600 / rgba(30,44,91,0.05) / letter-spacing 10px
+   グローバル座標 x=303 / 上端≒122（セクション padding top130 起点）。
+   セクションは position:relative。透かしがビューポート右へあふれて横スクロールを
+   生まないよう、セクションを overflow:hidden にしてクリップする。 */
+.sec-message {
+  overflow: hidden;
+}
+/* 透かし「MESSAGE」を構図(コンテナ)の ::before に置く。コンテナは narrow で swell-meta-js が
+   transform:scale するため、透かしも一緒に縮小し 960px でも見切れない。
+   従来は .sec-message::before(section基準 left:303/200px・実幅1052→右端1355) で、構図(コンテナ幅1120)を
+   はみ出し ~1355px 未満の幅で右が切れていた（960pxで顕著）。コンテナ基準に移し、コンテナ幅1120内に
+   収める位置(left:60＋実幅1052=1112<1120)にして、どの幅でもクリップしない。
+   ※コンテナ基準にしたことで、中央寄せされる各幅で透かしが常に本文の背面に追従する（従来は1440でのみ整合）。 */
+.sec-message .swell-block-fullWide__inner > .wp-block-flavor-universal-block::before {
+  content: "MESSAGE";
+  position: absolute;
+  top: 122px;
+  left: 60px;             /* コンテナ基準。実幅1052と合わせ右端1112<1120 で枠内に収める */
+  z-index: 0;             /* 本文・写真より背面 */
+  pointer-events: none;
+  color: rgba(30, 44, 91, 0.05);
+  font-family: 'Noto Serif JP', serif;
+  font-weight: 600;
+  font-size: 200px;
+  line-height: 40px;
+  letter-spacing: 10px;
+  white-space: nowrap;
+}
+/* 透かしより前面に本文ラッパー・写真を置く（z-index:0 の absolute ::before が静的本文より前面に
+   出るのを防ぐため、コンテナ直下の本文ラッパーを relative+z-index:1、写真も z-index:1 にする） */
+.sec-message .swell-block-fullWide__inner > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block {
+  position: relative;
+  z-index: 1;
+}
+.sec-message .swell-block-fullWide__inner > .wp-block-flavor-universal-block > figure.wp-block-image {
+  z-index: 1;
+}
+.sec-message .swell-block-fullWide__inner {
+  position: relative;
+  z-index: 1;
+}
+
+/* ②右写真2枚のビューポート右ブリード：absolute配置（left 651/809px）＋
+   親 max-width:1120 中央寄せの content-box を越えて右へ張り出す配置は属性で表現済み。
+   上の overflow:hidden が右あふれをクリップするが、デザインでは写真右端は
+   セクション内（≦1389px / 1440幅）に収まるためクリップされない。 */
+
+/* =============================================================
+   4. CONTACT (.sec-about-contact)
+   ============================================================= */
+
+/* ①セクション上端の境界線 datapack 07 装飾3: border-top 1px solid #020c1b */
+.sec-about-contact {
+  border-top: 1px solid #020c1b;
+}
+
+/* ②CTAボタンの影 datapack 07 装飾2: shadow-lg 相当
+   box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1) */
+.sec-about-contact .wp-block-button .wp-block-button__link {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+              0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+/* =============================================================
+   5. 見出しのSWELL既定装飾打ち消し
+   実DOM確認: .sec-* h1/h2.is-style-section_ttl に SWELL既定の背景ボックス等は
+   出ていない（background:transparent / 疑似要素ライン無し）。現状不要のため未記述。
+   ============================================================= */
+
+/* =============================================================
+   6. Jost フォント（欧文ラベル）
+   Philosophy/Mission/Value ラベルはブロック属性で font-family:'Jost' 指定済み
+   （@import で読み込めば適用される）。FUTURE ラベルのみインラインで
+   Noto Sans JP 指定のため、ページ限定で Jost を上書きする。
+   datapack 05_FUTURE: ラベル "FUTURE" は Jost Medium / 13px / 0.15em
+   セレクタ: .sec-future 内で letter-spacing:0.15em を持つのは FUTURE ラベルのみ（実DOM確認済み）。 */
+.sec-future p[style*="0.15em"] {
+  font-family: 'Jost', sans-serif !important;
+}
+
+/* FUTURE(04) の左端を VALUE(03) の左端に揃える。
+   03 は .sec-value の構図(コンテンツ幅1015・基準1440)が transform:scale(vw/1440, origin top-left)
+   で縮小されるため、03 の左端 x は
+     ・vw<=1439: (1440-1015)/2 * vw/1440 = 14.75694vw
+     ・vw>=1440: (vw-1015)/2           = 50vw - 507.5px
+   04の箱は vw>=1120 では中央寄せ(max-width:1120, 左端=(vw-1120)/2)、vw<1120 では全幅化(左端=0)。
+   よって 04左端 = (vw>=1120 ? (vw-1120)/2 : 0) + padLeft。両領域で 04左端=03左端 を満たす padLeft は
+     ・vw>=1120: 560px - 35.24306vw   （中央寄せ分を差し引く）
+     ・vw<1120 : 14.75694vw           （箱左端0なので 03式そのもの）
+   この2式は vw=1120 で一致(165.3px)。下側=14.75694vw が小さく上側=560-35.24306vw が小さいので
+   両者の min をとり、さらに vw>=1440(03非scale)用に下限 52.5px を max で確保:
+     padLeft = max( min(14.75694vw, 560px - 35.24306vw), 52.5px )
+   箱の幅・右端は変えない(=はみ出し無し)。03はパネル+写真とロックされた縮小構図のため動かさず04側で吸収。 */
+.sec-future .swell-block-fullWide__inner > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block {
+  padding-left: max(min(14.75694vw, calc(560px - 35.24306vw)), 52.5px) !important;
+}
+
+/* Philosophy: is-style-section_ttl は既定で中央寄せ。このセクションの見出しは左寄せ指定。
+   core/heading は textAlign:'left' で has-text-align-left クラスを出さない（'left'を既定扱い）ため、
+   SWELL の中央指定(.post_content .is-style-section_ttl)を上回る詳細度でページ限定に左寄せする。 */
+.sec-philosophy h2.is-style-section_ttl {
+  text-align: left;
+}
+
+/* Philosophy: 灰色背景パネル(.philosophy-graybox)をデザイン通り画面右端までブリードさせる。
+   パネル右端から右ビューポート端までを ::after の灰色帯で埋める（パネルは position:relative・overflow:visible）。
+   ブリード幅はパネルの幅・scaleで変わるため、calc固定ではなく swell-meta-js が実測して
+   --gb-bleed（パネル座標）をセットする。これで全幅（設計幅未満〜超）で画面端まで途切れず伸びる。 */
+.sec-philosophy .philosophy-graybox::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: var(--gb-bleed, 0);
+  background: #f2f2f2;
+}
+
+/* FV: 見出し（is-style-section_ttl）は既定で中央寄せ。FVは他要素（ABOUT US/本文/ボタン）と揃えて左寄せ。 */
+.sec-about-fv h2.is-style-section_ttl {
+  text-align: left;
+}
+
+/* Philosophy レスポンシブ: PCの2カラム(絶対配置)を「縦積みにせず比率を保ったまま縮小」して
+   設計幅未満(〜960px=PC最小幅)に収める。グレーパネルを設計幅1280pxで固定し、利用可能幅に合わせて
+   transform:scale（フォント・画像・配置が一律縮小＝デザインの見た目そのまま小さくなる）。
+   右ブリード(min-width:1440)と競合しないよう max-width:1439 で適用。 */
+@media (max-width: 1439px) {
+  /* 内側コンテナ(グレーパネルの親): 左右パディング縮小＋グレーパネルを左寄せ＋横はみ出しをクリップ（縦のbreakoutは保持）
+     ※グレーパネルの直接の親を :has() で特定（sec-philosophyの直下ではなく __inner の孫のため） */
+  .sec-philosophy .wp-block-flavor-universal-block:has(> .philosophy-graybox) {
+    padding-left: 40px !important;
+    padding-right: 40px !important;
+    align-items: flex-start !important;
+    overflow-x: clip;
+  }
+  /* グレーパネル: 設計幅1280で固定。transform(scale)と margin-bottom は swell-meta-js が
+     利用可能幅に応じて設定する（CSSのcalcでは「長さ÷長さ＝無単位比率」が作れずscale係数を算出不可のため）。 */
+  .sec-philosophy .philosophy-graybox {
+    width: 1280px !important;
+    max-width: none !important;
+    align-self: flex-start !important;
+    transform-origin: top left;
+  }
+}
+
+/* =============================================================
+   MISSION (.sec-mission) カード: 見出し｜アイコン 中央ペア（ユーザー要望）
+   - SWELL既定の見出し下線(h3::before/::after)を除去（＝「ボーダー」非表示）
+   - ネイビー本体(.has-background)を row-wrap 化し、h3(order1)とアイコンUB(order2・絶対配置解除)を
+     1行に・縦中心揃え(align-items:center)・間隔12px。説明文p(order3)は全幅で次行。
+   - アイコン高さを48pxに統一（白アイコン 49/44/58/42 と不揃い→見出し縦位置がカード毎にズレるため）
+   - タイトル+12px+アイコンが254幅に収まるよう左右paddingを33→16pxに
+   - セレクタはフッククラス .sec-mission + 構造（data-ub-id非依存・再シリアライズ耐性）
+   ============================================================= */
+.sec-mission .wp-block-flavor-universal-block.has-background > h3.wp-block-heading::before,
+.sec-mission .wp-block-flavor-universal-block.has-background > h3.wp-block-heading::after {
+  display: none !important;
+  content: none !important;
+}
+.sec-mission .wp-block-flavor-universal-block.has-background {
+  flex-flow: row wrap !important;
+  align-items: center !important;
+  align-content: flex-start !important;
+  justify-content: center !important;
+  column-gap: 12px !important;
+  row-gap: 16px !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+.sec-mission .wp-block-flavor-universal-block.has-background > .wp-block-flavor-universal-block img {
+  height: 48px !important;
+  width: auto !important;
+  object-fit: contain !important;
+  aspect-ratio: auto !important;
+}
+.sec-mission .wp-block-flavor-universal-block.has-background > h3.wp-block-heading {
+  order: 1 !important;
+  margin: 0 !important;
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  text-align: center !important; /* 2行見出し(リフォーム/リノベーション等)を各行中央寄せ */
+}
+.sec-mission .wp-block-flavor-universal-block.has-background > .wp-block-flavor-universal-block {
+  order: 2 !important;
+  position: static !important;
+  flex: 0 0 auto !important;
+  width: auto !important; /* ラッパー固定幅(51等)>縮小後img幅 だと内側余白でgapがズレる→imgにフィット */
+}
+.sec-mission .wp-block-flavor-universal-block.has-background > p {
+  order: 3 !important;
+  flex: 0 0 100% !important;
+}
+
+/* =============================================================
+   MISSION カード: ≤1151px で 4列→2×2 折返し（中幅で4列が見切れるため）。
+   ブレイクポイントはトップページSERVICE(post7)と統一(1151)。
+   グリッド/カードは :has() で特定（data-ub-id非依存・再シリアライズ耐性）。
+   ============================================================= */
+@media (max-width: 1151px) {
+  /* グリッド: 折返し可＋左右16px内側余白 */
+  .sec-mission .wp-block-flavor-universal-block:has(> .wp-block-flavor-universal-block > .wp-block-flavor-universal-block.has-background) {
+    flex-wrap: wrap !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  /* カード: 2×2（gap24考慮で 50%-12px）。254px固定を解除 */
+  .sec-mission .wp-block-flavor-universal-block:has(> .wp-block-flavor-universal-block.has-background) {
+    flex: 1 1 calc(50% - 12px) !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+  /* カード内の写真figure・ネイビー本体をカード幅100%に（254固定解除） */
+  .sec-mission .wp-block-flavor-universal-block:has(> .wp-block-flavor-universal-block.has-background) > figure.wp-block-image,
+  .sec-mission .wp-block-flavor-universal-block:has(> .wp-block-flavor-universal-block.has-background) > .wp-block-flavor-universal-block.has-background {
+    width: 100% !important;
+    max-width: none !important;
+  }
+  .sec-mission .wp-block-flavor-universal-block:has(> .wp-block-flavor-universal-block.has-background) > figure.wp-block-image {
+    height: auto !important;
+  }
+  /* 写真を流体化（254×162のcover比率を維持） */
+  .sec-mission .wp-block-flavor-universal-block:has(> .wp-block-flavor-universal-block.has-background) > figure.wp-block-image img {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 254 / 162 !important;
+    object-fit: cover !important;
+  }
+}
+
+/* =============================================================
+   MISSION カード: ≤599px で 2列→1列（縦積み）。
+   約594px未満では2列だとカード幅が細く（navy<230px）、タイトル「不動産売買サポート」が
+   2行に折返してアイコンと重なり窮屈になるため、1枚を全幅にして「見出し｜アイコン」ペア＋
+   説明文に余裕を持たせる。600px以上は2列維持（タイトル1行に収まる）。 */
+@media (max-width: 599px) {
+  .sec-mission .wp-block-flavor-universal-block:has(> .wp-block-flavor-universal-block.has-background) {
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* =============================================================
+   VALUE (.sec-value): 背景をデザイン通り「角丸グレーパネル」に（全幅グレーをやめる）。
+   デザイン(Figma 1:2117)では背景は全幅ではなく、左は画面端まで／右は約105pxインセットの
+   角丸パネル(#f2f2f2)で、その上下左右に建物写真・打合せ写真が食い出す。navーとの間は明るい余白。
+   - .sec-value 背景を透明化＋上に明るい余白(margin-top)＝写真の上食い出しがnavーでなく白地に乗る
+   - ::before で角丸グレーパネルを背面に敷く（左0／右105inset／四隅16px）
+   - 内側コンテンツ/写真は z-index で前面へ
+   - 建物写真の上食い出しをデザイン値(パネル上端の46px上)へ（既定 top:-101 → -46）
+   ============================================================= */
+.sec-value {
+  background: transparent !important; /* インライン background-color:#f2f2f2（全幅グレー）を打ち消し */
+  margin-top: 0 !important;           /* full-wideの-32px負マージンを打ち消し（navーと密着） */
+  padding-top: 126px !important;      /* navー下端とグレーパネル上端の間の明るい余白（建物写真の上食い出しを内包） */
+  padding-bottom: 126px !important;   /* グレーパネル下端と次セクション(FUTURE)の間の白余白。上(padding-top)と同量で上下対称に。
+                                         ≥1440は自動高さで効く。≤1439はinnerをscaleして高さを swell-meta-js が明示設定するため、
+                                         JS側でも paddingBottom 分を高さに加算している（fitValue 参照）。 */
+  position: relative;
+}
+/* グレーパネルは inner の ::before（≤1439で inner ごと scale させ、パネルも一緒に縮小するため） */
+.sec-value .swell-block-fullWide__inner {
+  position: relative;
+  z-index: 0;
+}
+.sec-value .swell-block-fullWide__inner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 105px;            /* 右インセット（デザイン: 1440幅で105px白余白） */
+  background: #f2f2f2;
+  border-radius: 16px;
+  z-index: 0;
+}
+.sec-value .swell-block-fullWide__inner > * {
+  position: relative;
+  z-index: 1;             /* コンテンツ・写真をグレーパネルの前面に */
+}
+.sec-value figure.wp-block-image:has(img.wp-image-43) {
+  top: -46px !important;  /* 建物写真の上食い出しをデザイン値へ（パネル上端の46px上＝navーの80px下） */
+}
+
+/* 写真の設計サイズを強制＋コンテナ外への食い出しを許可（figure幅クランプによる見切れ防止）。 */
+.sec-value figure.wp-block-image:has(img.wp-image-43),
+.sec-value figure.wp-block-image:has(img.wp-image-43) img {
+  width: 553px !important;
+  max-width: none !important;
+}
+.sec-value figure.wp-block-image:has(img.wp-image-43) img { height: 368px !important; }
+.sec-value figure.wp-block-image:has(img.wp-image-44),
+.sec-value figure.wp-block-image:has(img.wp-image-44) img {
+  width: 405px !important;
+  max-width: none !important;
+}
+.sec-value figure.wp-block-image:has(img.wp-image-44) img { height: 270px !important; }
+
+/* ≤1439: VALUE構図(パネル＋テキスト＋写真)を基準幅1440で固定し、JS(swell-meta-js)が
+   transform:scale で比率維持縮小（960pxまで位置関係を保つ）。横はみ出しはクリップ。
+   建物写真の上食い出しは padding-top(126) 内に収まるためクリップされない。 */
+@media (max-width: 1439px) {
+  .sec-value {
+    overflow: clip;
+  }
+  .sec-value .swell-block-fullWide__inner {
+    width: 1440px;
+    margin: 0;
+    transform-origin: top left;
+    /* transform: scale(S) と .sec-value 高さ補正は swell-meta-js が設定 */
+  }
+}
+
+/* ≥1440: 構図(パネル＋テキスト＋写真)を基準幅1440pxのまま中央配置に固定する。
+   既定の loos/full-wide inner は画面幅に追従して伸びるため、ワイド画面では
+   グレーパネル(::before left:0/right:105)だけが右へ間延びし、中身(row max-width:1015 中央寄せ)
+   との間に無駄な空白が出ていた。inner を 1440px・margin auto で中央に固定し、構図全体を
+   1440デザインのまま据え置く（左右はページ背景の白余白）。1440ちょうどでは全幅＝デザインの
+   左ブリードを維持、1440超では中央配置で間延びを解消。 */
+@media (min-width: 1440px) {
+  .sec-value .swell-block-fullWide__inner {
+    width: 1440px;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* =================================================================================
+   SP（スマホ版・≤959px）  Figma: About us (スマホ版) node 1:2244
+   方針: 全ルールを @media (max-width:959px) 配下に限定し PC(≥960px) には一切影響させない。
+   セクションごとに段階実装。既存の JS 縮小(fitPhilosophy/fitValue/fitMessage)は別途 ≤959 で無効化する。
+   ================================================================================= */
+@media (max-width: 959px) {
+  /* ---- ① FV (.sec-about-fv) ---- Figma 1:2418 ----
+     一致済(変更不要): ABOUT US 38px金, 「私たちについて」13px, ボタン(border1px/px46py17/13px)。
+     差分のみ補正: 見出し2=26px, サブ=14px, 左右padding=30px。 */
+  /* 見出し2「お客様の人生に寄り添い、…」: 38px→26px / lh60.8→41.6 / ls→1.28px(0.0492em) */
+  .sec-about-fv h2.is-style-section_ttl {
+    font-size: 26px !important;
+    line-height: 41.6px !important;
+    letter-spacing: 0.0492em !important;
+  }
+  /* サブ「変わりゆく時代に、…」(inline 15px のもの): 15px→14px / lh31.5→29.4 */
+  .sec-about-fv p[style*="font-size:15px"] {
+    font-size: 14px !important;
+    line-height: 29.4px !important;
+  }
+  /* FVコンテンツ群の左右パディング 40px→30px（Figma px-30） */
+  .sec-about-fv .wp-block-flavor-universal-block.has-ub-direction-column.has-ub-align-flex-start {
+    padding-left: 30px !important;
+    padding-right: 30px !important;
+  }
+  /* FVロゴ: スマホデザイン(Figma 1:2428)に合わせる。実ロゴ≈84×71px・右端から約125px(768基準)。
+     768デザインを比率維持で縮小するため vw 指定（84/768≈11vw, 71/768≈9.3vw, 125/768≈16.3vw）。
+     ≥960px は別ルール right:max(32px,(100vw-1200)/2) が有効＝今回は不変。 */
+  .sec-about-fv figure.wp-block-image.has-custom-border {
+    right: 16.3vw !important;
+    width: 11vw !important;
+  }
+  .sec-about-fv figure.wp-block-image.has-custom-border img {
+    width: 11vw !important;
+    height: 9.3vw !important;
+  }
+
+  /* ---- ② Philosophy (.sec-philosophy) ---- Figma 1:2246 ----
+     PCの2カラム(絶対配置＋JS縮小)を SP の「テキスト縦積み → その下に写真コラージュ帯」に組替え。
+     JS縮小は ≤959 で無効化済み。@media(max-width:1439) のパネル width:1280 / padding40 を打ち消す。 */
+  /* 内側コンテナ: グレーパネルを画面左端までブリードさせるため左右padding 0 に。
+     上下paddingはPCの130pxが過多（Figmaはパネル上63px/下0px）。≤959で 上8.2vw(63px@768)/下0 に補正。 */
+  .sec-philosophy .wp-block-flavor-universal-block:has(> .philosophy-graybox) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: 8.2vw !important;     /* Figma: パネル上端y63（63/768≒8.2vw） */
+    padding-bottom: 0 !important;      /* Figma: パネルが section下端まで（下余白0／次セクション側で間隔を取る） */
+    overflow-x: clip;
+  }
+  /* グレーパネル: 全幅左ブリード。min-height で「テキスト(左)＋写真コラージュ(右下)」を内包する
+     領域を確保し、写真は bottom 基準で重ねる。テキストが高ければ自動拡張（375でも破綻しにくい）。 */
+  .sec-philosophy .philosophy-graybox {
+    width: 84vw !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 112vw !important;   /* Figma: パネル高862/768≒112vw。握手が右で上のテキスト横までせり上がる高さ */
+    transform: none !important;
+    align-self: stretch !important;
+    position: relative !important;
+    padding: 17px 30px 0 30px !important;  /* Figma: パネル上端y63→テキストy80=17px。テキストを上げて写真との重なりを解消 */
+    overflow: visible !important;
+  }
+  .sec-philosophy .philosophy-graybox::after { content: none !important; } /* JSブリード帯は無効化 */
+  /* テキスト群: 通常フロー・前面(z5)。写真(z1-3)より前面にして本文の可読性を確保 */
+  .sec-philosophy .philosophy-graybox > .wp-block-flavor-universal-block:not(:has(figure)) {
+    position: relative !important;
+    left: auto !important;            /* PCの絶対配置 left を打ち消す（relative化で再有効化されシフトする事故を防ぐ） */
+    top: auto !important;
+    z-index: 5 !important;
+    width: 92vw !important;
+    max-width: none !important;
+    transform: none !important;
+  }
+  /* 本文2段落だけ狭く左寄せ（Figma: 440px/376px≒52vw）。右側を空けて握手写真をせり上げる。
+     ラベル「OUR PHILOSOPHY」はラベル行内にネストのため direct child セレクタで除外。 */
+  /* 段落: Figma 1:2258 のタイポを明示（PCの広い letter-spacing 等を打ち消し文字幅を正す＝
+     最長行を1行に収め段落1を3行＝デザイン同にする）。max-width 58vw≒Figma para幅440px。 */
+  .sec-philosophy .philosophy-graybox > .wp-block-flavor-universal-block:not(:has(figure)) > p.wp-block-paragraph {
+    max-width: 60vw !important;   /* 最長行を1行に収め各段落3行に */
+    font-size: 14px !important;   /* Figma14.5pxを微縮。自然折返しで14.5pxだと段落2の最長行が握手写真に被るため。視認差ほぼ無し */
+    line-height: 30.45px !important;
+    letter-spacing: 1.28px !important;
+    color: #666 !important;
+  }
+  /* 見出し「一度のお取引で…」: PC 32px → SP 22px / lh33 / ls1.28 / #333（Figma 1:2256）。
+     「01」ラベルも is-style-section_ttl(40px) のため、inline font-size:32px のものだけ狙う。 */
+  .sec-philosophy h2.is-style-section_ttl[style*="font-size:32px"] {
+    font-size: 22px !important;
+    line-height: 33px !important;
+    letter-spacing: 1.28px !important;
+    color: #333 !important;
+  }
+  /* 写真スタック群: 子(building/family)を graybox 基準の絶対配置にするため自身は static・高さ0 */
+  .sec-philosophy .philosophy-graybox > .wp-block-flavor-universal-block:has(img.wp-image-38) {
+    position: static !important;
+    width: 0 !important; height: 0 !important;
+  }
+  /* 3枚を graybox 基準で bottom アンカー配置（vwで768→375比率縮小） */
+  .sec-philosophy .philosophy-graybox figure.wp-block-image:has(img.wp-image-37),
+  .sec-philosophy .philosophy-graybox figure.wp-block-image:has(img.wp-image-38),
+  .sec-philosophy .philosophy-graybox figure.wp-block-image:has(img.wp-image-39) {
+    position: absolute !important;
+    top: auto !important; margin: 0 !important;
+    max-width: none !important;
+    border-radius: 0 !important; overflow: hidden;  /* デザインは角丸なし（直角） */
+  }
+  /* 握手(37)=右・大・後面。Figma: x408/y414(graybox基準351)/334×438。
+     ★right指定はグレーパネル(84vw=645px)右端基準になりビューポートより左へズレるため left 指定にする。
+     left=408/768≒53.1vw（graybox左端=ビューポート左0なので viewport 408px に一致）。右端=53.1+43.5=96.6vw=742px。 */
+  .sec-philosophy .philosophy-graybox figure.wp-block-image:has(img.wp-image-37) {
+    left: 53.1vw !important; right: auto !important; bottom: 9.5vw !important;
+    width: 43.5vw !important; height: 57vw !important; z-index: 1 !important;
+  }
+  /* 建物(38)=左・中。Figma: x42/y449/281×224.6 → 左5.5vw・bottom22.3vw・36.6×29.2vw。 */
+  .sec-philosophy .philosophy-graybox figure.wp-block-image:has(img.wp-image-38) {
+    left: 5.5vw !important; right: auto !important; bottom: 22.3vw !important;
+    width: 36.6vw !important; height: 29.2vw !important; z-index: 2 !important;
+  }
+  /* 家族/打合せ(39)=中央下・前面。Figma: x206/y598/234×186 → 左26.8vw・bottom7.9vw・30.5×24.2vw。 */
+  .sec-philosophy .philosophy-graybox figure.wp-block-image:has(img.wp-image-39) {
+    left: 26.8vw !important; right: auto !important; bottom: 7.9vw !important;
+    width: 30.5vw !important; height: 24.2vw !important; z-index: 3 !important;
+  }
+  .sec-philosophy .philosophy-graybox figure.wp-block-image:has(img.wp-image-37) img,
+  .sec-philosophy .philosophy-graybox figure.wp-block-image:has(img.wp-image-38) img,
+  .sec-philosophy .philosophy-graybox figure.wp-block-image:has(img.wp-image-39) img {
+    width: 100% !important; height: 100% !important; object-fit: cover !important; max-width: none !important;
+    border-radius: 0 !important;
+  }
+
+
+  /* ---- ③ Mission (.sec-mission) ---- Figma 1:2267 ----
+     セクション=ネイビー#0a192f・4列→2×2(既存@media1151で対応済)。SPデザイン差分を補正。 */
+  /* セクション上下スペース: コンテナのPC130px→ Figma 上80px(10.4vw)/下66px(8.6vw) */
+  .sec-mission .swell-block-fullWide__inner > .wp-block-flavor-universal-block {
+    padding-top: 10.4vw !important;
+    padding-bottom: 8.6vw !important;
+  }
+  /* 見出し「人生の大切な選択を…」: PC34px→24px / lh36 / ls1.28（1行に収める） Figma1:2278 */
+  .sec-mission h2.is-style-section_ttl {
+    font-size: 24px !important;
+    line-height: 36px !important;
+    letter-spacing: 1.28px !important;
+  }
+  /* カード本体: PCの「タイトル｜アイコン中央ペア(row)」→ SPは「タイトル中央＋説明中央(縦積み)＋アイコン右上絶対配置」。
+     Figma 1:2284: padding33・items-center・アイコンは absolute(右上)。 */
+  .sec-mission .wp-block-flavor-universal-block.has-background {
+    flex-flow: column nowrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    position: relative !important;
+    padding: 33px !important;
+    row-gap: 6px !important;
+  }
+  .sec-mission .wp-block-flavor-universal-block.has-background > h3.wp-block-heading {
+    order: 0 !important;
+    width: 100% !important;
+    text-align: center !important;
+    flex: 0 0 auto !important;
+  }
+  /* アイコン群: 右上に絶対配置（Figma: 342幅body内 left248/top22.7＝右寄り上部） */
+  .sec-mission .wp-block-flavor-universal-block.has-background > .wp-block-flavor-universal-block {
+    position: absolute !important;
+    top: 24px !important;
+    right: 24px !important;
+    order: 0 !important;
+    width: auto !important;
+    flex: 0 0 auto !important;
+  }
+  .sec-mission .wp-block-flavor-universal-block.has-background > p {
+    order: 0 !important;
+    width: 100% !important;
+    flex: 0 0 auto !important;
+    text-align: center !important;
+  }
+
+
+  /* ---- ④ Value (.sec-value) ---- Figma 1:2335 ----
+     PCの「2カラム＋JS縮小＋グレーパネル」を SP は「写真上(商談大+建物右下) → テキスト下(左寄せ)」に。
+     JS縮小は ≤959 無効化済み。@media(max-width:1439) の inner width:1440 / グレーパネル を打ち消す。
+     SPデザインはグレーパネルなし(白地)。 */
+  .sec-value {
+    padding-top: 5.7vw !important;     /* Figma: 商談写真 上端 y44（44/768≒5.7vw） */
+    padding-bottom: 11vw !important;    /* テキスト下のセクション余白 */
+    overflow: visible !important;
+  }
+  .sec-value .swell-block-fullWide__inner {
+    width: 100% !important;             /* @media1439 の 1440px を打ち消す */
+    margin: 0 !important;
+    transform: none !important;
+  }
+  .sec-value .swell-block-fullWide__inner::before { display: none !important; } /* PCの inner グレーパネルは隠す */
+  /* SPグレーパネル: 写真の背面まで上に伸びる縦長矩形（写真がパネル上部を覆う）。
+     Figma画素検出（商談写真の右外側 x620-650 で真の上端を確認）: 上端80px(10.4vw)・下端871px(下から4.8vw)・
+     左ブリード(0)・右端656px(右インセット112px=14.6vw)・角丸16px。
+     セクション基準で配置し、写真(z1/2)・テキスト(z5)の背面(z0)に敷く。 */
+  .sec-value::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 14.6vw;
+    top: 10.4vw;
+    bottom: 4.8vw;
+    background: #f2f2f2;
+    border-radius: 0 !important;   /* SPデザインは角丸なし（直角） */
+    z-index: 0;
+    pointer-events: none;
+  }
+  /* コンテナ(行): 縦構造に。padding-top で写真ぶんの高さを空け、テキストを下に流す。 */
+  .sec-value .swell-block-fullWide__inner > .wp-block-flavor-universal-block {
+    display: block !important;
+    width: 100% !important; max-width: none !important;
+    transform: none !important;
+    position: relative !important;
+    padding: 48.3vw 30px 0 30px !important;  /* top=テキスト開始(y415-44≒371px≒48.3vw) / 左右30 */
+    margin: 0 !important;
+  }
+  /* テキストカラム: 通常フロー・全幅・左寄せ・前面 */
+  .sec-value .swell-block-fullWide__inner > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block:not(:has(figure)) {
+    position: relative !important; left: auto !important; top: auto !important;
+    width: 100% !important; max-width: none !important; transform: none !important;
+    z-index: 5 !important;
+  }
+  /* 見出し「本当に価値ある選択を…」: PC32px→22px / lh33 / ls1.28 / #333（Figma 1:2347） */
+  .sec-value h2.is-style-section_ttl[style*="font-size:32px"] {
+    font-size: 22px !important; line-height: 33px !important; letter-spacing: 1.28px !important; color: #333 !important;
+  }
+  /* 写真2枚: graybox/コンテナ基準で絶対配置（vwで768→375比率縮小）。角丸なし。 */
+  .sec-value figure.wp-block-image:has(img.wp-image-43),
+  .sec-value figure.wp-block-image:has(img.wp-image-44) {
+    position: absolute !important; margin: 0 !important; max-width: none !important;
+    top: auto !important; border-radius: 0 !important; overflow: hidden;
+  }
+  /* 商談写真(44)=上・大・左 Figma: x0/y44(コンテナ基準0)/615×331 → left0/top0/80×43.1vw */
+  .sec-value figure.wp-block-image:has(img.wp-image-44) {
+    left: 0 !important; right: auto !important; top: 0 !important;
+    width: 80vw !important; height: 43.1vw !important; z-index: 1 !important;
+  }
+  /* 建物(43)=右下に重なり Figma: x472/y301(コンテナ基準257)/255×170 → left61.5/top33.5/33.2×22.1vw */
+  .sec-value figure.wp-block-image:has(img.wp-image-43) {
+    left: 61.5vw !important; right: auto !important; top: 33.5vw !important;
+    width: 33.2vw !important; height: 22.1vw !important; z-index: 2 !important;
+  }
+  .sec-value figure.wp-block-image:has(img.wp-image-43) img,
+  .sec-value figure.wp-block-image:has(img.wp-image-44) img {
+    width: 100% !important; height: 100% !important; object-fit: cover !important; max-width: none !important; border-radius: 0 !important;
+  }
+
+
+  /* ---- ⑤ Future (.sec-future) ---- Figma 1:2433/2439/2442 ----
+     ダーク背景＋テキスト（左寄せ）。見出し22px・本文14.5px・左padding30px。 */
+  /* 見出し「変化を恐れず、…」: 32px→22px / lh33 / ls1.28（白・左） */
+  .sec-future h2.is-style-section_ttl {
+    font-size: 22px !important;
+    line-height: 33px !important;
+    letter-spacing: 1.28px !important;
+    text-align: left !important;
+  }
+  /* 本文(inline15px): 15px→14.5px / lh30.45 / ls1.28（白85%は既存inline色を維持） */
+  .sec-future p[style*="font-size:15px"] {
+    font-size: 14.5px !important;
+    line-height: 30.45px !important;
+    letter-spacing: 1.28px !important;
+  }
+  /* テキスト群の左右padding: PCの大きな左paddingを SP は30px（Figma左寄せ） */
+  .sec-future .swell-block-fullWide__inner > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block {
+    padding-left: 30px !important;
+    padding-right: 30px !important;
+  }
+  /* ダークセクションの高さ・上下余白: PC(min-height660/padding140/中央寄せ)→ Figma(約509・上78/下82・上揃え) */
+  .sec-future .swell-block-fullWide__inner > .wp-block-flavor-universal-block {
+    min-height: 66.3vw !important;     /* 509/768≒66.3vw */
+    padding-top: 10.2vw !important;    /* 78/768≒10.2vw */
+    padding-bottom: 10.7vw !important; /* 82/768≒10.7vw */
+    justify-content: flex-start !important;
+  }
+  /* テキストの要素間ギャップをデザインに合わせる（要素間25px・段落間30px）。現状は要素margin由来で
+     狭くテキストが短い→下に余白。flex gap＋margin0 で揃え、テキスト高さをFigma(≈349)に近づける。 */
+  .sec-future .swell-block-fullWide__inner > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block {
+    row-gap: 25px !important;
+  }
+  .sec-future .swell-block-fullWide__inner > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block > * {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  .sec-future .wp-block-flavor-universal-block:has(> p[style*="font-size:15px"]) {
+    row-gap: 30px !important;
+  }
+  .sec-future .wp-block-flavor-universal-block:has(> p[style*="font-size:15px"]) > p {
+    margin: 0 !important;
+  }
+
+
+  /* ---- ⑥ Message (.sec-message) ---- Image#13(スクショ)基準 ----
+     SP: チーム写真(左上)＋建物写真(右下に重ね)の2枚コラージュ → 透かしMESSAGE → MESSAGE見出し+代表メッセージ
+         → 本文2段 → 署名(右)。見出し26px/本文14px は既にFigma一致。建物写真はSPで再表示(コラージュ)。
+     コラージュ各位置はImage#13実測(PAGE-px/768基準): team L30/T0/436×240, bld 右端16/上108/316×208。 */
+  .sec-message .swell-block-fullWide__inner > .wp-block-flavor-universal-block {
+    display: block !important;
+    position: relative !important;
+    width: 100% !important;
+    max-width: none !important;
+    transform: none !important;
+    margin: 0 !important;
+    padding: 48vw 0 0 0 !important;  /* 上=写真ゾーン(建物 約39.5vw)＋透かし帯。padding なのでマージン相殺しない */
+    min-height: 0 !important;
+  }
+  /* セクション上下スペース: Figma 上80px(10.4vw)/下47px(6.1vw)。現状0でベタ付きのため付与 */
+  .sec-message {
+    padding-top: 10.4vw !important;
+    padding-bottom: 6.1vw !important;
+  }
+  /* 建物写真: チーム写真削除(クライアント依頼)に伴い、残る建物写真を上部中央に単独配置。 */
+  .sec-message figure.wp-block-image:has(img.wp-image-40) {
+    display: block !important;
+    position: absolute !important;
+    left: 20vw !important;        /* 中央寄せ: (100-60)/2 */
+    right: auto !important;
+    top: 0 !important;
+    width: 60vw !important;       /* ≒461px */
+    height: 39.5vw !important;    /* 461/1.519 アスペクト維持 */
+    margin: 0 !important;
+    transform: none !important;
+    z-index: 2 !important;
+  }
+  .sec-message figure.wp-block-image:has(img.wp-image-40) img {
+    width: 100% !important; height: 100% !important; object-fit: cover !important;
+  }
+  /* テキスト群: 写真ゾーンの下へ押し下げ（margin-top）。全幅・前面 */
+  .sec-message .swell-block-fullWide__inner > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block {
+    position: relative !important;
+    width: 100% !important;
+    max-width: none !important;
+    transform: none !important;
+    left: auto !important; top: auto !important;
+    margin-top: 0 !important;     /* 写真ゾーンは comp の padding-top で確保（相殺回避） */
+    padding: 0 30px !important;
+    align-items: stretch !important;  /* 子(見出し/本文/署名)を全幅へ。stretch無しだと本文が522pxに縮みデザイン(703)より狭く折返す */
+    z-index: 3 !important;
+  }
+  /* MESSAGE見出し: 左寄せ（26px/lh52/金は既存inline維持） */
+  .sec-message h2.wp-block-heading { text-align: left !important; }
+  /* 本文の強制改行<br>はPCレイアウト用。SP(708px幅)では折返し位置がデザインとズレ短く見えるため無効化し自然折返しに */
+  .sec-message p.wp-block-paragraph br { display: none !important; }
+  /* 署名(代表取締役/時田和輝)を右寄せ。ブロック幅が552pxに縮み右端が本文(738)より内側で止まるため、
+     全幅化(stretch)した上で align-items:flex-end＋text-align:right で本文と同じ右端へ揃える。 */
+  .sec-message .swell-block-fullWide__inner > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block {
+    width: 100% !important;
+    max-width: none !important;
+    align-self: stretch !important;
+    align-items: flex-end !important;
+    text-align: right !important;
+  }
+  /* 透かしMESSAGE: 写真ゾーン下・中央（80px） */
+  .sec-message .swell-block-fullWide__inner > .wp-block-flavor-universal-block::before {
+    font-size: 80px !important;
+    line-height: 80px !important;
+    left: 50% !important;
+    top: 42vw !important;
+    transform: translateX(-50%) !important;
+    letter-spacing: 4px !important;
+  }
+
+}
+
+
+/* =============================================================
+   Philosophy: 狭い幅(≤767px)での本文↔写真コラージュ重なり対策
+   ≤700px付近で本文が増え、bottom基準の固定写真コラージュに本文が重なる。
+   グレーボックスを height:auto＋padding-bottom にして「テキスト量に応じて縦に伸ばし」、
+   写真コラージュ(最上端=握手 約66.5vw)を常にテキストの下へ回して重なりを解消する。
+   768〜959 は従来のコラージュ（テキスト横に握手写真）を維持＝不変。
+   ============================================================= */
+@media (max-width: 767px) {
+  .sec-philosophy .philosophy-graybox {
+    min-height: 0 !important;
+    height: auto !important;
+    padding-bottom: 72vw !important;   /* 写真帯(握手上端≒66.5vw)＋余白 */
+  }
+  /* テキスト群はグレーボックス内に収め、本文は全幅で行数を抑える（狭幅で間延びさせない） */
+  .sec-philosophy .philosophy-graybox > .wp-block-flavor-universal-block:not(:has(figure)) {
+    width: auto !important;
+  }
+  .sec-philosophy .philosophy-graybox > .wp-block-flavor-universal-block:not(:has(figure)) > p.wp-block-paragraph {
+    max-width: none !important;
+  }
+}
+
+/* =============================================================
+   FV: ≤599px(モバイル)はサービスページ(/service/)FVと同じコンパクトなサイズ感に揃える。
+   service FV(モバイル)= 高さ650 / 見出し22px / 英字ラベル(SERVICE)24px。about FVを合わせる。
+   600px以上(タブレット〜PC)は従来(高さ900 / 見出し26px / ABOUT US 38px)を維持＝不変。 */
+@media (max-width: 599px) {
+  /* FV高さ: 900→650（serviceと同じ min-height） */
+  .sec-about-fv .swell-block-fullWide__inner > .wp-block-flavor-universal-block {
+    min-height: 650px !important;
+  }
+  /* 英字タイトル ABOUT US: 38px→24px（serviceのSERVICEラベル相当のサイズ感へ） */
+  .sec-about-fv h1.is-style-section_ttl {
+    font-size: 24px !important;
+    line-height: 32px !important;
+  }
+  /* 見出し2「お客様の人生に寄り添い、…」: 26px→22px（service見出し相当） */
+  .sec-about-fv h2.is-style-section_ttl {
+    font-size: 22px !important;
+    line-height: 33px !important;
+  }
+}
+
+/* =============================================================
+   ≤599px(モバイル) 微調整（Image#18 赤注釈対応）
+   - Mission: 左右padding 40→16px（コンテンツを広げ、見出し2行化＋本文の不自然な折返し解消）
+   - Philosophy: グレーボックス左右padding 30→16px（見出し「一度のお取引で終わらない、」を1行に収め2行化）
+   ============================================================= */
+@media (max-width: 599px) {
+  .sec-mission .swell-block-fullWide__inner > .wp-block-flavor-universal-block {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  /* Mission見出し: 24px→22px。語の切れ目で2行に割れるよう微縮（…より良い／未来へ…）。PCは34px1行で不変 */
+  .sec-mission h2.is-style-section_ttl {
+    font-size: 22px !important;
+    line-height: 33px !important;
+  }
+  .sec-philosophy .philosophy-graybox {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  /* Philosophy見出し: 22px→20px。「一度のお取引で終わらない、」(13字)を1行に収め2行化（グレーボックス幅84vw内） */
+  .sec-philosophy h2.is-style-section_ttl[style*="font-size:32px"] {
+    font-size: 20px !important;
+    line-height: 30px !important;
+  }
+}
+
+/* =============================================================
+   ≤599px(モバイル) 微調整 第2弾（Image#19 赤注釈対応）
+   テーマ: モバイルの左右余白を 16px に統一＋Value グレー背景をテキストより広く＋Mission本文の改行整理。
+   600px以上は従来(30px等)を維持＝不変。 */
+@media (max-width: 599px) {
+  /* ① FVロゴ: 右端から16px（≤959の 16.3vw を上書き） */
+  .sec-about-fv figure.wp-block-image.has-custom-border {
+    right: 16px !important;
+  }
+  /* ② Mission本文: PC用の強制改行<br>を無効化し自然折返しに（「す。」単独等の不自然な改行を解消） */
+  .sec-mission p.wp-block-paragraph br { display: none !important; }
+  /* ② Missionカード: グリッドの左右padding16pxを0にし、見出しと同じ左右16px（comp側padding）に揃える */
+  .sec-mission .wp-block-flavor-universal-block:has(> .wp-block-flavor-universal-block > .wp-block-flavor-universal-block.has-background) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  /* ③ Value: グレー背景(::before)を右端16pxまで広げる（テキストより広くする要望）。左は0(全幅ブリード)維持 */
+  .sec-value::before {
+    right: 16px !important;
+  }
+  /* ③ Value: テキスト左を30→16px（右30pxは維持＝グレーがテキストより広い状態を作る） */
+  .sec-value .swell-block-fullWide__inner > .wp-block-flavor-universal-block {
+    padding-left: 16px !important;
+  }
+  /* ④ Future: 左右30→16px */
+  .sec-future .swell-block-fullWide__inner > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  /* ⑤ Message: テキスト左右30→16px */
+  .sec-message .swell-block-fullWide__inner > .wp-block-flavor-universal-block > .wp-block-flavor-universal-block {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* =============================================================
+   MISSION カード: トップページ式「見出し｜アイコン横並び＋説明文下段」を全幅で確実化。
+   ブロック属性(layoutDirection:column / icon absolute)が優勢でベースの row-wrap が負けるため、
+   詳細度を上げて(.swell-block-fullWide__inner を挟む=0,4,0)強制上書きする。
+   これで1列(≤599)でもアイコンがテキストに被らない（トップページと同じ並び）。 */
+.sec-mission .swell-block-fullWide__inner .wp-block-flavor-universal-block.has-background {
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  align-content: flex-start !important;
+  justify-content: center !important;
+  column-gap: 12px !important;
+  row-gap: 16px !important;
+}
+.sec-mission .swell-block-fullWide__inner .wp-block-flavor-universal-block.has-background > h3.wp-block-heading {
+  order: 1 !important;
+  flex: 0 1 auto !important;
+  width: auto !important;       /* ブロック属性のwidth(275px)を打ち消し内容幅に。アイコンと横並びにする */
+  max-width: none !important;
+  margin: 0 !important;
+}
+.sec-mission .swell-block-fullWide__inner .wp-block-flavor-universal-block.has-background > .wp-block-flavor-universal-block {
+  order: 2 !important;
+  position: static !important;
+  flex: 0 0 auto !important;
+}
+.sec-mission .swell-block-fullWide__inner .wp-block-flavor-universal-block.has-background > p {
+  order: 3 !important;
+  flex: 0 0 100% !important;
+}
+/* カード説明文の<br>(3行=トップページと同じ)を維持。≤599の本文<br>無効化が効かないよう復活させる */
+.sec-mission .wp-block-flavor-universal-block.has-background > p br {
+  display: inline !important;
+}
+
+/* =============================================================
+   SWELL既定の #content margin-bottom:81px（本文〜フッター間の余白）を打ち消す。
+   このページは最終セクションが全幅CONTACT（ネイビー）で、その下の余分な余白を無くし
+   フッターへ地続きにする（ユーザー要望: お問い合わせ下の余分なスペース削除）。 */
+#content { margin-bottom: 0 !important; }
+
